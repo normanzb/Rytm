@@ -33,17 +33,17 @@
  * 
  **/
 ;(function(factory){
-    var Steps = factory(this);
+    var Rytm = factory(this);
 
     if (this.require){
 
         if (this.require.amd && this.define){
             // if it is amd 
-            this.define(Steps);
+            this.define(Rytm);
         }
         else if (this.exports){
             // nodejs require
-            this.exports = Steps;
+            this.exports = Rytm;
         }
     }
 
@@ -81,7 +81,7 @@
     }
 
     /* Constructor */
-	var steps = function(){
+	var Rytm = function(){
 	
 		this.steps = [this._createNode(function(){
 			this.next();
@@ -98,19 +98,20 @@
         loadSteps(arguments)
         
 	};
-	var sp = steps.prototype;
-	sp._createNode = function(callback, next){
+	var p = Rytm.prototype;
+	p._createNode = function(callback, next){
 		if (next === undef){
 			next = null;
 		}
 		var ret = {callback: callback, next: next};
 		return ret;
 	};
+
 	/**
 	 * @function step
 	 * define a step
 	 **/
-	sp.step = function(callback){
+	p.beat = function(callback){
         if (arguments.length > 1){
             loadSteps(arguments);
         }
@@ -129,12 +130,16 @@
 		
 		return this;
 	};
+
+    // backward compatibility
+    p.step = beat;
+
 	/**
 	 * @function wait
 	 * add a step into current steps instance, the newly added step will pause execution 
 	 * for specified milliseconds
 	 */
-	sp.wait = function(timeout){
+	p.wait = function(timeout){
 		var s = this;
 
 		s.step(function(){
@@ -148,7 +153,7 @@
 	 * @function go
 	 * Start next step immediately
 	 **/
-	sp.next = function(){
+	p.next = function(){
 		
 		var callback;
 		
@@ -183,7 +188,7 @@
 	 * (this function will always be executed
 	 * with context pointed to current instance of steps)
 	 **/
-	sp.go = function(){
+	p.go = function(){
 		return this.next.apply(this, arguments);
 	};
 
@@ -193,7 +198,7 @@
 	 * (this function will always be executed
 	 * with context pointed to current instance of steps)
 	 **/
-	sp.defer = function(){
+	p.defer = function(){
 		setTimeout(this.go, 0);
 		return this;
 	};
@@ -203,7 +208,7 @@
 	 * Return a callback, once the callback is called, go to next step and ignore 
 	 * the other calls which defined in current step
 	 */
-	sp.once = function(){
+	p.once = function(){
 		var cur = this.cursor,
 			go = this.go,
 			scope = this;
@@ -222,7 +227,7 @@
      * Return a new callback each time last() is called, will go to next step once all generated callback is called
      * at least once.
      */
-    sp.all = function(){
+    p.all = function(){
         var cur = this.cursor,
             go = this.go;
 
@@ -279,6 +284,9 @@
     
         return ret; 
     };
+
+    // TODO: 
+    // p.reverse
 	
-	return steps;
+	return Rytm;
 });
