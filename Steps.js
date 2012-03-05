@@ -1,6 +1,5 @@
-/*!require: etui*/
 /**
- * @class: steps
+ * @class: Steps
  * An async step helper.
  * 
  * Well organize your code when calling nested async operation.
@@ -22,18 +21,66 @@
  * var s = new Steps();
  * s.step(function step1(){
  * 		asyncCall1(this.go);
- * });
- * s.step(function step2(){
-* 		asyncCall2(this.go);
- * });
- * s.step(function step3(){
+ * })
+ * .step(function step2(){
+ * 		asyncCall2(this.go);
+ * })
+ * .step(function step3(){
  * 		this.go();
- * });
- * s.go();
+ * })
+ * .go();
  * 
  * 
  **/
-!function(undef){
+;(function(factory){
+    var Steps = factory(this);
+
+    if (this.require){
+
+        if (this.require.amd && this.define){
+            // if it is amd 
+            this.define(Steps);
+        }
+        else if (this.exports){
+            // nodejs require
+            this.exports = Steps;
+        }
+    }
+
+})
+(function(global, undef){
+    "use strict";
+
+    // no operation func
+    var noop;
+
+    if (global.etui){
+        noop = global.etui.noop;
+    }
+    else if(global.jQuery){
+        noop = global.jQuery.noop;
+    }
+    else{
+        noop = function(){};
+    }
+
+    /*
+        @private loads steps from arguments
+    */
+    function loadSteps(args){
+
+        for(var i = 0, l < args.length; i < l; i++){
+            var cur = args[i];
+
+            if (typeof cur != "function"){
+                continue;
+            }
+
+            this.step(cur);
+        }
+    }
+
+    /* Constructor */
 	var steps = function(){
 	
 		this.steps = [this._createNode(function(){
@@ -46,6 +93,10 @@
 		this.go = this.go.bind(this);
 		this.defer = this.defer.bind(this);
 		this.wait = this.wait.bind(this);
+
+        // load steps which passed in ctor
+        loadSteps(arguments)
+        
 	};
 	var sp = steps.prototype;
 	sp._createNode = function(callback, next){
@@ -60,16 +111,21 @@
 	 * define a step
 	 **/
 	sp.step = function(callback){
-		var stepStruct = this._createNode(callback);
-		this.steps[this.steps.length - 1].next = stepStruct;
-		this.steps.push(stepStruct);
-		
-		// if already called go(), this.cursor will pointed to null
-		// repoint it so this.next() can continue calls the newly added
-		// steps
-		if (this.cursor == null){
-			this.cursor = stepStruct;
-		}
+        if (arguments.length > 1){
+            loadSteps(arguments);
+        }
+        else{
+    		var stepStruct = this._createNode(callback);
+    		this.steps[this.steps.length - 1].next = stepStruct;
+    		this.steps.push(stepStruct);
+    		
+    		// if already called go(), this.cursor will pointed to null
+    		// repoint it so this.next() can continue calls the newly added
+    		// steps
+    		if (this.cursor == null){
+    			this.cursor = stepStruct;
+    		}
+        }
 		
 		return this;
 	};
@@ -112,7 +168,12 @@
 		// advance to next
 		this.cursor = this.cursor.next;
 
-		callback.apply(this, arguments);
+		var result = callback.apply(this, arguments);
+
+        // go to next step direclty if there is return value
+        if (result !== undefined){
+            this.go(result);
+        }
 		
 		return this;
 	};
@@ -167,7 +228,7 @@
 
         if (!cur){
         	// means we reached the end
-        	return etui.noop;
+        	return noop;
         }
 
         if (!cur.lastCalls){
@@ -219,8 +280,5 @@
         return ret; 
     };
 	
-	// for backward compatibility
-	etui.steps = steps;
-	// fix the bad naming convention
-	etui.Steps = steps;
-}();
+	return steps;
+});
