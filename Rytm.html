@@ -186,9 +186,9 @@ worrying the changing of context.</p>
     </div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>and then advance to next</p></div></div><div class="code"><div class="wrapper">    <span class="k">this</span><span class="p">.</span><span class="nx">cursor</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">cursor</span><span class="p">.</span><span class="nx">next</span><span class="p">;</span>
 
     <span class="kd">var</span> <span class="nx">result</span> <span class="o">=</span> <span class="nx">callback</span><span class="p">.</span><span class="nx">apply</span><span class="p">(</span><span class="k">this</span><span class="p">,</span> <span class="nx">arguments</span><span class="p">);</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><ul>
-<li>_go() will also check if the <code>beat</code> has a return value
+<li>_go() will also check if the current task has a return value
 if there is, then consider the result as the parameter of
-next <code>beat</code>
+next task
 p.s. return false will also cause immediate execution of next
 <code>beat</code></li>
 </ul></div></div><div class="code"><div class="wrapper">        <span class="k">if</span> <span class="p">(</span><span class="nx">result</span> <span class="o">!==</span> <span class="kc">undefined</span><span class="p">){</span>
@@ -196,17 +196,16 @@ p.s. return false will also cause immediate execution of next
         <span class="p">}</span>
     
     <span class="k">return</span> <span class="k">this</span><span class="p">;</span>
-  <span class="p">};</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h2 id="defer">defer</h2></div></div></div><div class="segment"><div class="code"><div class="wrapper">  <span class="nx">p</span><span class="p">.</span><span class="nx">defer</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(){</span>
+  <span class="p">};</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h2 id="defer">defer</h2>
+
+<p>Execute the next task in the sequence, same as appending a wait(0) between 
+current task and next task</p></div></div><div class="code"><div class="wrapper">  <span class="nx">p</span><span class="p">.</span><span class="nx">defer</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(){</span>
     <span class="nx">setTimeout</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">go</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
     <span class="k">return</span> <span class="k">this</span><span class="p">;</span>
-  <span class="p">};</span>
+  <span class="p">};</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h2 id="once">once</h2>
 
-  <span class="cm">/**</span>
-<span class="cm">   * @function once</span>
-<span class="cm">   * Return a callback, once the callback is called, go to next step and ignore </span>
-<span class="cm">   * the other calls which defined in current step</span>
-<span class="cm">   */</span>
-  <span class="nx">p</span><span class="p">.</span><span class="nx">once</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(){</span>
+<p>Return a new callback, once any of the returned callbacks is called,
+go to next step and ignore the other returned callbacks.</p></div></div><div class="code"><div class="wrapper">  <span class="nx">p</span><span class="p">.</span><span class="nx">once</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(){</span>
     <span class="kd">var</span> <span class="nx">cur</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">cursor</span><span class="p">,</span>
       <span class="nx">go</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">go</span><span class="p">,</span>
       <span class="nx">scope</span> <span class="o">=</span> <span class="k">this</span><span class="p">;</span>
@@ -218,18 +217,39 @@ p.s. return false will also cause immediate execution of next
 
       <span class="nx">go</span><span class="p">();</span>
     <span class="p">};</span>
-  <span class="p">};</span>
+  <span class="p">};</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h2 id="all">all</h2>
 
-  <span class="cm">/**</span>
-<span class="cm">     * @function all</span>
-<span class="cm">     * Return a new callback each time last() is called, will go to next step once all generated callback is called</span>
-<span class="cm">     * at least once.</span>
-<span class="cm">     */</span>
-    <span class="nx">p</span><span class="p">.</span><span class="nx">all</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(){</span>
+<p>Return a new callback each time <code>all()</code> is called, will go to next step 
+once all returned callbacks are called</p>
+
+<h3 id="tips-and-annotation">Tips and Annotation</h3>
+
+<ul>
+<li>It is suggested to call <code>all()</code> in the same synchronous context, if <code>all()</code>
+is called in a delayed asynchronous context, the 'next task' may be executed
+ealier then you expected.</li>
+</ul></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><pre><code>var r = Rytm(function(){
+
+    doAnimate(this.all());
+
+    // bbaaaaaaaad! DO NOT invoke all() in a delayed call
+    // animation may be finished before someElement gets clicked
+    // at that time, the only one callback was returned by 'all()'
+    // thus, next task will be executed immedately.
+    someElement.bind('click', function(){
+        r.all();
+    });
+}, function(){
+    blahblah();
+});
+</code></pre></div></div><div class="code"><div class="wrapper">    <span class="nx">p</span><span class="p">.</span><span class="nx">all</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(){</span>
         <span class="kd">var</span> <span class="nx">cur</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">cursor</span><span class="p">,</span>
             <span class="nx">go</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">go</span><span class="p">;</span>
 
-        <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">cur</span><span class="p">){</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>means we reached the end</p></div></div><div class="code"><div class="wrapper">          <span class="k">return</span> <span class="nx">noop</span><span class="p">;</span>
+        <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">cur</span><span class="p">){</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><ul>
+<li>If all tasks are executed and then <code>all()</code> was called, 
+it will return an <code>noop</code></li>
+</ul></div></div><div class="code"><div class="wrapper">          <span class="k">return</span> <span class="nx">noop</span><span class="p">;</span>
         <span class="p">}</span>
 
         <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">cur</span><span class="p">.</span><span class="nx">lastCalls</span><span class="p">){</span>
@@ -246,14 +266,20 @@ p.s. return false will also cause immediate execution of next
             <span class="kd">var</span> <span class="nx">scope</span> <span class="o">=</span> <span class="k">this</span><span class="p">,</span>
                 <span class="nx">args</span> <span class="o">=</span> <span class="nx">arguments</span><span class="p">;</span>
             
-            <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">cur</span><span class="p">.</span><span class="nx">ticked</span><span class="p">){</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>if it is executed within the calling TASK, we delay the actual execution
-to next TASK
-this is to prevent a usage pitfall:
+            <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">cur</span><span class="p">.</span><span class="nx">ticked</span><span class="p">){</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><ul>
+<li>If the 'returned callback' is executed within the generating 
+synchronous context, now Rytm will mondatorily delay the actual execution of 
+next task in a asynchronous context.
+This is to prevent a usage pitfall in old version of Rytm:
 s.step(function(){
-// this will cause problem
-executeTheCallbackImmediately(s.all());
-executeTheCallbackImmediately(s.all());</p></div></div><div class="code"><div class="wrapper">                <span class="c1">//})</span>
-                <span class="nx">setTimeout</span><span class="p">(</span><span class="kd">function</span><span class="p">(){</span>
+    // this will cause problem if we don't delay the execution.
+    // Because the first 'returned callback' will be executed 
+    // immediately after it is produced and cause we advanced to next step
+    // before 2nd <code>all()</code>.
+    executeTheCallbackImmediately(s.all());
+    executeTheCallbackImmediately(s.all());
+})</li>
+</ul></div></div><div class="code"><div class="wrapper">                <span class="nx">setTimeout</span><span class="p">(</span><span class="kd">function</span><span class="p">(){</span>
                     <span class="k">return</span> <span class="nx">ret</span><span class="p">.</span><span class="nx">apply</span><span class="p">(</span><span class="nx">scope</span><span class="p">,</span> <span class="nx">args</span><span class="p">);</span>
                 <span class="p">},</span> <span class="mi">0</span><span class="p">);</span>
 
@@ -289,6 +315,6 @@ executeTheCallbackImmediately(s.all());</p></div></div><div class="code"><div cl
 
 <p>To hold the parameters to next beat</p>
 
-<h3 id="test">test</h3></div></div><div class="code"><div class="wrapper">  
+<h3 id="tests">tests</h3></div></div><div class="code"><div class="wrapper">  
   <span class="k">return</span> <span class="nx">Rytm</span><span class="p">;</span>
 <span class="p">});</span></div></div></div></div></body></html>
