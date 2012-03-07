@@ -3,7 +3,7 @@
 Rytm is a asynchronous flow control library that turns nested chaos into linear, readable
 sweetness.
 
-## Why Rytm
+# The Reasons for Rytm
 
 Says we are going to:
 
@@ -64,7 +64,8 @@ safer, simpler, and productivity, and the code become more readable and compact:
     }, function(evt){
 
        if (evt.keyCode == 13){
-           this.go();
+           // tell Rytm to go to next step directly   
+           return true;
        }
 
     }, function(){
@@ -85,4 +86,5 @@ safer, simpler, and productivity, and the code become more readable and compact:
 
         divMsgInner.html(data.msg).fadeIn();
 
-     });
+     })
+     .go();
