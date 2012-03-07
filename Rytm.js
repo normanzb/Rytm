@@ -202,9 +202,9 @@
 
 		var result = callback.apply(this, arguments);
 
-        // * _go() will also check if the `beat` has a return value
+        // * _go() will also check if the current task has a return value
         //   if there is, then consider the result as the parameter of
-        //   next `beat`
+        //   next task
         //   p.s. return false will also cause immediate execution of next
         //   `beat`
         if (result !== undefined){
@@ -215,16 +215,20 @@
 	};
 
     // ## defer
+    // 
+    // Execute the next task in the sequence, same as appending a wait(0) between 
+    // current task and next task
+
 	p.defer = function(){
 		setTimeout(this.go, 0);
 		return this;
 	};
 
-	/**
-	 * @function once
-	 * Return a callback, once the callback is called, go to next step and ignore 
-	 * the other calls which defined in current step
-	 */
+    // ## once
+    // 
+    // Return a new callback, once any of the returned callbacks is called,
+    // go to next step and ignore the other returned callbacks.
+
 	p.once = function(){
 		var cur = this.cursor,
 			go = this.go,
@@ -239,17 +243,37 @@
 		};
 	};
 
-	/**
-     * @function all
-     * Return a new callback each time last() is called, will go to next step once all generated callback is called
-     * at least once.
-     */
+    // ## all
+    // Return a new callback each time `all()` is called, will go to next step 
+    // once all returned callbacks are called
+    //
+    // ### Tips and Annotation
+    // * It is suggested to call `all()` in the same synchronous context, if `all()`
+    //   is called in a delayed asynchronous context, the 'next task' may be executed
+    //   ealier then you expected.
+
+    //     var r = Rytm(function(){
+    //
+    //         doAnimate(this.all());
+    //
+    //         // bbaaaaaaaad! DO NOT invoke all() in a delayed call
+    //         // animation may be finished before someElement gets clicked
+    //         // at that time, the only one callback was returned by 'all()'
+    //         // thus, next task will be executed immedately.
+    //         someElement.bind('click', function(){
+    //             r.all();
+    //         });
+    //     }, function(){
+    //         blahblah();
+    //     });
+
     p.all = function(){
         var cur = this.cursor,
             go = this.go;
 
         if (!cur){
-        	// means we reached the end
+        	// * If all tasks are executed and then `all()` was called, 
+            //   it will return an `noop`
         	return noop;
         }
 
@@ -268,14 +292,18 @@
                 args = arguments;
             
             if (!cur.ticked){
-                // if it is executed within the calling TASK, we delay the actual execution
-                // to next TASK
-                // this is to prevent a usage pitfall:
-                // s.step(function(){
-                    // // this will cause problem
-                    // executeTheCallbackImmediately(s.all());
-                    // executeTheCallbackImmediately(s.all());
-                //})
+                // * If the 'returned callback' is executed within the generating 
+                //   synchronous context, now Rytm will mondatorily delay the actual execution of 
+                //   next task in a asynchronous context.
+                //   This is to prevent a usage pitfall in old version of Rytm:
+                //     s.step(function(){
+                //         // this will cause problem if we don't delay the execution.
+                //         // Because the first 'returned callback' will be executed 
+                //         // immediately after it is produced and cause we advanced to next step
+                //         // before 2nd `all()`.
+                //         executeTheCallbackImmediately(s.all());
+                //         executeTheCallbackImmediately(s.all());
+                //     })
                 setTimeout(function(){
                     return ret.apply(scope, args);
                 }, 0);
@@ -319,7 +347,7 @@
 
 // ### data/params
 // To hold the parameters to next beat
-// ### test
+// ### tests
 	
 	return Rytm;
 });
