@@ -1,4 +1,6 @@
-// # Multiple environment support
+// # Internal and External APIs
+
+// ## Multiple environment support
 // Rytm supports multiply JavaScript environment including:
 
 ;(function(factory){
@@ -19,7 +21,7 @@
     }
 
 })
-// # Internal and External APIs
+
 (function(global, undef){
     "use strict";
 
