@@ -1,0 +1,4 @@
+{
+  "globs": ["*.js","README.md"],
+  "github": true
+}
