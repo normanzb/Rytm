@@ -4,7 +4,7 @@
 // Rytm is a asynchronous flow control library that turns nested chaos into linear, readable
 // sweetness.
 
-// ## Why Rytm
+// # The Reasons for Rytm
 
 // Says we are going to:
 
@@ -65,7 +65,8 @@
 //     }, function(evt){
 //
 //        if (evt.keyCode == 13){
-//            this.go();
+//            // tell Rytm to go to next step directly   
+//            return true;
 //        }
 //
 //     }, function(){
@@ -86,10 +87,11 @@
 //
 //         divMsgInner.html(data.msg).fadeIn();
 //
-//      });
+//      })
+//      .go();
 //
 
-// ## Multiple environment support
+// # Multiple environment support
 // Rytm supports multiply JavaScript environment including:
 
 ;(function(factory){
@@ -110,10 +112,11 @@
     }
 
 })
+// # Internal and External APIs
 (function(global, undef){
     "use strict";
 
-    // no operation func
+    /* no operation func */
     var noop;
 
     if (global.etui){
@@ -125,6 +128,47 @@
     else{
         noop = function(){};
     }
+
+    // ## Constructor
+    //
+    // Create Rytm instance and also loads the tasks
+    // 
+    // `var r = new Rytm(beat1, beat2, beat3 ... )`
+    //
+    // ### Parameters
+    // * beat1-n: Tasks/callbacks which to be executed in order
+    // 
+    // ### Tips and Annotations
+    // * Tasks can also be added later by calling `instance.beat`
+
+    /* 
+        Constructor
+    */
+    var Rytm = function(){
+
+        // * You can also create new instance the 'creator' style:
+        //   `var r = Rytm()`
+        if (this instanceof Rytm){
+            return new (Rytm.bind.apply(Rytm, null, arguments))();
+        }
+    
+        this.steps = [this._createNode(function(){
+            this.next();
+        })];
+        this.cursor = this.steps[0];
+        
+        // * Wrap `go()`, make sure the context of `go()` is always current
+        //   instance
+        this.go = this._go.bind(this);
+        this.defer = this.defer.bind(this);
+        this.wait = this.wait.bind(this);
+
+        // * Constructor will automatically load callbacks which passed in constructor as 
+        //   tasks
+        loadSteps(arguments);
+        
+    };
+    
 
     /*
         @private loads steps from arguments
@@ -142,24 +186,6 @@
         }
     }
 
-    /* Constructor */
-	var Rytm = function(){
-	
-		this.steps = [this._createNode(function(){
-			this.next();
-		})];
-		this.cursor = this.steps[0];
-		
-		// wrap go(), make sure the context of go() is always current
-		// instance
-		this.go = this.go.bind(this);
-		this.defer = this.defer.bind(this);
-		this.wait = this.wait.bind(this);
-
-        // load steps which passed in ctor
-        loadSteps(arguments)
-        
-	};
 	var p = Rytm.prototype;
 	p._createNode = function(callback, next){
 		if (next === undef){
@@ -169,10 +195,15 @@
 		return ret;
 	};
 
-	/**
-	 * @function step
-	 * define a step
-	 **/
+	// ## beat
+    // 
+    // Add a callback to the execution sequence
+    //
+    // ### Parameters
+    // * callback: The task/callback to be added
+    // 
+    // ### Tips and Annotations
+    //
 	p.beat = function(callback){
         if (arguments.length > 1){
             loadSteps(arguments);
@@ -182,9 +213,11 @@
     		this.steps[this.steps.length - 1].next = stepStruct;
     		this.steps.push(stepStruct);
     		
-    		// if already called go(), this.cursor will pointed to null
-    		// repoint it so this.next() can continue calls the newly added
-    		// steps
+            // * Once current Rytm instance executed
+            //   and after the execution of current instance
+            //   there are newly added tasks, go() will start
+            //   from previous stop point and work through the 
+            //   newly added task exclusively
     		if (this.cursor == null){
     			this.cursor = stepStruct;
     		}
@@ -193,14 +226,18 @@
 		return this;
 	};
 
-    // backward compatibility
+    // ## step
+    // 
+    // An alias of `beat` for backward compatibility.
+    //
     p.step = beat;
 
-	/**
-	 * @function wait
-	 * add a step into current steps instance, the newly added step will pause execution 
-	 * for specified milliseconds
-	 */
+    // ## wait
+    //
+    // When called, a built-in step will be added to the sequence for pausing
+    // a specified millisecond
+    // 
+    // * wait: Specifiy the millisecond to wait.
 	p.wait = function(timeout){
 		var s = this;
 
@@ -211,10 +248,29 @@
 		return this;
 	};
 
-	/**
-	 * @function go
-	 * Start next step immediately
-	 **/
+    // ## go
+    // 
+    // A wrapper of `_go()` with bounded context. You can feel free to
+    // call `go` or pass `go` to any async function as a callback method without
+    // worrying the changing of context.
+    // 
+    // ### Usage
+    //     function asyncCall(callback){
+    //         setTimeout(function(){
+    //             callback.call({});
+    //         }, 0)
+    //     }
+    //
+    //     (new Rytm(function(){
+    //         // no worry, simply pass it to anything you want
+    //         asyncCall(this.go);
+    //     })).go();
+
+	// ## _go
+    //
+    // When called, execute the next step immediately. (context-binding-free)
+    //
+    // ### Tips and Annotations
 	p._go = function(){
 		
 		var callback;
@@ -225,41 +281,31 @@
 		
 		callback = this.cursor.callback;
 
-		// reset lastCalls array
+		// * `_go()` will internally setup/normalize the parameters 
 		this.cursor.lastCalls = [];
 		
 		if (callback == null){
 			return this;
 		}
 		
-		// advance to next
+		//   and then advance to next
 		this.cursor = this.cursor.next;
 
 		var result = callback.apply(this, arguments);
 
-        // go to next step direclty if there is return value
+        // * _go() will also check if the `beat` has a return value
+        //   if there is, then consider the result as the parameter of
+        //   next `beat`
+        //   p.s. return false will also cause immediate execution of next
+        //   `beat`
         if (result !== undefined){
             this.go(result);
         }
 		
 		return this;
 	};
-	/**
-	 * @function go
-	 * Start next step immediately 
-	 * (this function will always be executed
-	 * with context pointed to current instance of steps)
-	 **/
-	p.go = function(){
-		return this._go.apply(this, arguments);
-	};
 
-	/**
-	 * @function go
-	 * Start next step when code execution thread idle
-	 * (this function will always be executed
-	 * with context pointed to current instance of steps)
-	 **/
+    // ## defer
 	p.defer = function(){
 		setTimeout(this.go, 0);
 		return this;

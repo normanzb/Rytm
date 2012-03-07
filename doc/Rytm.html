@@ -1,5 +1,5 @@
 <!DOCTYPE html><html lang="en"><head><title>Rytm</title></head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0"><meta name="groc-relative-root" content=""><meta name="groc-document-path" content="Rytm"><meta name="groc-project-path" content="Rytm.js"><link rel="stylesheet" type="text/css" media="all" href="assets/style.css"><script type="text/javascript" src="assets/behavior.js"></script><body><div id="meta"><div class="file-path">Rytm.js</div></div><div id="document"><div class="segment"></div><div class="segment"><div class="comments"><div class="wrapper"><h1 id="rytm">Rytm</h1></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>Rytm is a asynchronous flow control library that turns nested chaos into linear, readable
-sweetness.</p></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h2 id="why-rytm">Why Rytm</h2></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>Says we are going to:</p></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><ol>
+sweetness.</p></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h1 id="the-reasons-for-rytm">The Reasons for Rytm</h1></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>Says we are going to:</p></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><ol>
 <li>Wait for user input.</li>
 <li>Send user input to server, and wait for response.</li>
 <li>Slide down the message box and in the meantime, fade in an image.</li>
@@ -51,7 +51,8 @@ safer, simpler, and productivity, and the code become more readable and compact:
 }, function(evt){
 
    if (evt.keyCode == 13){
-       this.go();
+       // tell Rytm to go to next step directly   
+       return true;
    }
 
 }, function(){
@@ -72,8 +73,9 @@ safer, simpler, and productivity, and the code become more readable and compact:
 
     divMsgInner.html(data.msg).fadeIn();
 
- });
-</code></pre></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h2 id="multiple-environment-support">Multiple environment support</h2>
+ })
+ .go();
+</code></pre></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h1 id="multiple-environment-support">Multiple environment support</h1>
 
 <p>Rytm supports multiply JavaScript environment including:</p></div></div><div class="code"><div class="wrapper"><span class="p">;(</span><span class="kd">function</span><span class="p">(</span><span class="nx">factory</span><span class="p">){</span>
     <span class="kd">var</span> <span class="nx">Rytm</span> <span class="o">=</span> <span class="nx">factory</span><span class="p">(</span><span class="k">this</span><span class="p">);</span>
@@ -92,9 +94,11 @@ safer, simpler, and productivity, and the code become more readable and compact:
         <span class="p">}</span>
     <span class="p">}</span>
 
-<span class="p">})</span>
-<span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">global</span><span class="p">,</span> <span class="nx">undef</span><span class="p">){</span>
-    <span class="s2">&quot;use strict&quot;</span><span class="p">;</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>no operation func</p></div></div><div class="code"><div class="wrapper">    <span class="kd">var</span> <span class="nx">noop</span><span class="p">;</span>
+<span class="p">})</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h1 id="internal-and-external-apis">Internal and External APIs</h1></div></div></div><div class="segment"><div class="code"><div class="wrapper"><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">global</span><span class="p">,</span> <span class="nx">undef</span><span class="p">){</span>
+    <span class="s2">&quot;use strict&quot;</span><span class="p">;</span>
+
+    <span class="cm">/* no operation func */</span>
+    <span class="kd">var</span> <span class="nx">noop</span><span class="p">;</span>
 
     <span class="k">if</span> <span class="p">(</span><span class="nx">global</span><span class="p">.</span><span class="nx">etui</span><span class="p">){</span>
         <span class="nx">noop</span> <span class="o">=</span> <span class="nx">global</span><span class="p">.</span><span class="nx">etui</span><span class="p">.</span><span class="nx">noop</span><span class="p">;</span>
@@ -104,7 +108,48 @@ safer, simpler, and productivity, and the code become more readable and compact:
     <span class="p">}</span>
     <span class="k">else</span><span class="p">{</span>
         <span class="nx">noop</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(){};</span>
-    <span class="p">}</span>
+    <span class="p">}</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h2 id="constructor">Constructor</h2>
+
+<p>Create Rytm instance and also loads the tasks</p>
+
+<p><code>var r = new Rytm(beat1, beat2, beat3 ... )</code></p>
+
+<h3 id="parameters">Parameters</h3>
+
+<ul>
+<li>beat1-n: Tasks/callbacks which to be executed in order</li>
+</ul>
+
+<h3 id="tips-and-annotations">Tips and Annotations</h3>
+
+<ul>
+<li>Tasks can also be added later by calling <code>instance.beat</code></li>
+</ul></div></div><div class="code"><div class="wrapper">    <span class="cm">/* </span>
+<span class="cm">        Constructor</span>
+<span class="cm">    */</span>
+    <span class="kd">var</span> <span class="nx">Rytm</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(){</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><ul>
+<li>You can also create new instance the 'creator' style:
+<code>var r = Rytm()</code></li>
+</ul></div></div><div class="code"><div class="wrapper">        <span class="k">if</span> <span class="p">(</span><span class="k">this</span> <span class="k">instanceof</span> <span class="nx">Rytm</span><span class="p">){</span>
+            <span class="k">return</span> <span class="k">new</span> <span class="p">(</span><span class="nx">Rytm</span><span class="p">.</span><span class="nx">bind</span><span class="p">.</span><span class="nx">apply</span><span class="p">(</span><span class="nx">Rytm</span><span class="p">,</span> <span class="kc">null</span><span class="p">,</span> <span class="nx">arguments</span><span class="p">))();</span>
+        <span class="p">}</span>
+    
+        <span class="k">this</span><span class="p">.</span><span class="nx">steps</span> <span class="o">=</span> <span class="p">[</span><span class="k">this</span><span class="p">.</span><span class="nx">_createNode</span><span class="p">(</span><span class="kd">function</span><span class="p">(){</span>
+            <span class="k">this</span><span class="p">.</span><span class="nx">next</span><span class="p">();</span>
+        <span class="p">})];</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">cursor</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">steps</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
+        </div></div></div><div class="segment"><div class="comments"><div class="wrapper"><ul>
+<li>Wrap <code>go()</code>, make sure the context of <code>go()</code> is always current
+instance</li>
+</ul></div></div><div class="code"><div class="wrapper">        <span class="k">this</span><span class="p">.</span><span class="nx">go</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">_go</span><span class="p">.</span><span class="nx">bind</span><span class="p">(</span><span class="k">this</span><span class="p">);</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">defer</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">defer</span><span class="p">.</span><span class="nx">bind</span><span class="p">(</span><span class="k">this</span><span class="p">);</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">wait</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">wait</span><span class="p">.</span><span class="nx">bind</span><span class="p">(</span><span class="k">this</span><span class="p">);</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><ul>
+<li>Constructor will automatically load callbacks which passed in constructor as 
+tasks</li>
+</ul></div></div><div class="code"><div class="wrapper">        <span class="nx">loadSteps</span><span class="p">(</span><span class="nx">arguments</span><span class="p">);</span>
+        
+    <span class="p">};</span>
+    
 
     <span class="cm">/*</span>
 <span class="cm">        @private loads steps from arguments</span>
@@ -122,19 +167,6 @@ safer, simpler, and productivity, and the code become more readable and compact:
         <span class="p">}</span>
     <span class="p">}</span>
 
-    <span class="cm">/* Constructor */</span>
-  <span class="kd">var</span> <span class="nx">Rytm</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(){</span>
-  
-    <span class="k">this</span><span class="p">.</span><span class="nx">steps</span> <span class="o">=</span> <span class="p">[</span><span class="k">this</span><span class="p">.</span><span class="nx">_createNode</span><span class="p">(</span><span class="kd">function</span><span class="p">(){</span>
-      <span class="k">this</span><span class="p">.</span><span class="nx">next</span><span class="p">();</span>
-    <span class="p">})];</span>
-    <span class="k">this</span><span class="p">.</span><span class="nx">cursor</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">steps</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
-    </div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>wrap go(), make sure the context of go() is always current
-instance</p></div></div><div class="code"><div class="wrapper">    <span class="k">this</span><span class="p">.</span><span class="nx">go</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">go</span><span class="p">.</span><span class="nx">bind</span><span class="p">(</span><span class="k">this</span><span class="p">);</span>
-    <span class="k">this</span><span class="p">.</span><span class="nx">defer</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">defer</span><span class="p">.</span><span class="nx">bind</span><span class="p">(</span><span class="k">this</span><span class="p">);</span>
-    <span class="k">this</span><span class="p">.</span><span class="nx">wait</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">wait</span><span class="p">.</span><span class="nx">bind</span><span class="p">(</span><span class="k">this</span><span class="p">);</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>load steps which passed in ctor</p></div></div><div class="code"><div class="wrapper">        <span class="nx">loadSteps</span><span class="p">(</span><span class="nx">arguments</span><span class="p">)</span>
-        
-  <span class="p">};</span>
   <span class="kd">var</span> <span class="nx">p</span> <span class="o">=</span> <span class="nx">Rytm</span><span class="p">.</span><span class="nx">prototype</span><span class="p">;</span>
   <span class="nx">p</span><span class="p">.</span><span class="nx">_createNode</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">callback</span><span class="p">,</span> <span class="nx">next</span><span class="p">){</span>
     <span class="k">if</span> <span class="p">(</span><span class="nx">next</span> <span class="o">===</span> <span class="nx">undef</span><span class="p">){</span>
@@ -142,13 +174,17 @@ instance</p></div></div><div class="code"><div class="wrapper">    <span class="
     <span class="p">}</span>
     <span class="kd">var</span> <span class="nx">ret</span> <span class="o">=</span> <span class="p">{</span><span class="nx">callback</span><span class="o">:</span> <span class="nx">callback</span><span class="p">,</span> <span class="nx">next</span><span class="o">:</span> <span class="nx">next</span><span class="p">};</span>
     <span class="k">return</span> <span class="nx">ret</span><span class="p">;</span>
-  <span class="p">};</span>
+  <span class="p">};</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h2 id="beat">beat</h2>
 
-  <span class="cm">/**</span>
-<span class="cm">   * @function step</span>
-<span class="cm">   * define a step</span>
-<span class="cm">   **/</span>
-  <span class="nx">p</span><span class="p">.</span><span class="nx">beat</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">callback</span><span class="p">){</span>
+<p>Add a callback to the execution sequence</p>
+
+<h3 id="parameters">Parameters</h3>
+
+<ul>
+<li>callback: The task/callback to be added</li>
+</ul>
+
+<h3 id="tips-and-annotations">Tips and Annotations</h3></div></div><div class="code"><div class="wrapper">  <span class="nx">p</span><span class="p">.</span><span class="nx">beat</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">callback</span><span class="p">){</span>
         <span class="k">if</span> <span class="p">(</span><span class="nx">arguments</span><span class="p">.</span><span class="nx">length</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">){</span>
             <span class="nx">loadSteps</span><span class="p">(</span><span class="nx">arguments</span><span class="p">);</span>
         <span class="p">}</span>
@@ -156,22 +192,28 @@ instance</p></div></div><div class="code"><div class="wrapper">    <span class="
         <span class="kd">var</span> <span class="nx">stepStruct</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">_createNode</span><span class="p">(</span><span class="nx">callback</span><span class="p">);</span>
         <span class="k">this</span><span class="p">.</span><span class="nx">steps</span><span class="p">[</span><span class="k">this</span><span class="p">.</span><span class="nx">steps</span><span class="p">.</span><span class="nx">length</span> <span class="o">-</span> <span class="mi">1</span><span class="p">].</span><span class="nx">next</span> <span class="o">=</span> <span class="nx">stepStruct</span><span class="p">;</span>
         <span class="k">this</span><span class="p">.</span><span class="nx">steps</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="nx">stepStruct</span><span class="p">);</span>
-        </div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>if already called go(), this.cursor will pointed to null
-repoint it so this.next() can continue calls the newly added
-steps</p></div></div><div class="code"><div class="wrapper">        <span class="k">if</span> <span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">cursor</span> <span class="o">==</span> <span class="kc">null</span><span class="p">){</span>
+        </div></div></div><div class="segment"><div class="comments"><div class="wrapper"><ul>
+<li>Once current Rytm instance executed
+and after the execution of current instance
+there are newly added tasks, go() will start
+from previous stop point and work through the 
+newly added task exclusively</li>
+</ul></div></div><div class="code"><div class="wrapper">        <span class="k">if</span> <span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">cursor</span> <span class="o">==</span> <span class="kc">null</span><span class="p">){</span>
           <span class="k">this</span><span class="p">.</span><span class="nx">cursor</span> <span class="o">=</span> <span class="nx">stepStruct</span><span class="p">;</span>
         <span class="p">}</span>
         <span class="p">}</span>
     
     <span class="k">return</span> <span class="k">this</span><span class="p">;</span>
-  <span class="p">};</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>backward compatibility</p></div></div><div class="code"><div class="wrapper">    <span class="nx">p</span><span class="p">.</span><span class="nx">step</span> <span class="o">=</span> <span class="nx">beat</span><span class="p">;</span>
+  <span class="p">};</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h2 id="step">step</h2>
 
-  <span class="cm">/**</span>
-<span class="cm">   * @function wait</span>
-<span class="cm">   * add a step into current steps instance, the newly added step will pause execution </span>
-<span class="cm">   * for specified milliseconds</span>
-<span class="cm">   */</span>
-  <span class="nx">p</span><span class="p">.</span><span class="nx">wait</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">timeout</span><span class="p">){</span>
+<p>An alias of <code>beat</code> for backward compatibility.</p></div></div><div class="code"><div class="wrapper">    <span class="nx">p</span><span class="p">.</span><span class="nx">step</span> <span class="o">=</span> <span class="nx">beat</span><span class="p">;</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h2 id="wait">wait</h2>
+
+<p>When called, a built-in step will be added to the sequence for pausing
+a specified millisecond</p>
+
+<ul>
+<li>wait: Specifiy the millisecond to wait.</li>
+</ul></div></div><div class="code"><div class="wrapper">  <span class="nx">p</span><span class="p">.</span><span class="nx">wait</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">timeout</span><span class="p">){</span>
     <span class="kd">var</span> <span class="nx">s</span> <span class="o">=</span> <span class="k">this</span><span class="p">;</span>
 
     <span class="nx">s</span><span class="p">.</span><span class="nx">step</span><span class="p">(</span><span class="kd">function</span><span class="p">(){</span>
@@ -179,13 +221,29 @@ steps</p></div></div><div class="code"><div class="wrapper">        <span class=
     <span class="p">});</span>
     
     <span class="k">return</span> <span class="k">this</span><span class="p">;</span>
-  <span class="p">};</span>
+  <span class="p">};</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h2 id="go">go</h2>
 
-  <span class="cm">/**</span>
-<span class="cm">   * @function go</span>
-<span class="cm">   * Start next step immediately</span>
-<span class="cm">   **/</span>
-  <span class="nx">p</span><span class="p">.</span><span class="nx">_go</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(){</span>
+<p>A wrapper of <code>_go()</code> with bounded context. You can feel free to
+call <code>go</code> or pass <code>go</code> to any async function as a callback method without
+worrying the changing of context.</p>
+
+<h3 id="usage">Usage</h3>
+
+<pre><code>function asyncCall(callback){
+    setTimeout(function(){
+        callback.call({});
+    }, 0)
+}
+
+(new Rytm(function(){
+    // no worry, simply pass it to anything you want
+    asyncCall(this.go);
+})).go();
+</code></pre></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h2 id="-go">_go</h2>
+
+<p>When called, execute the next step immediately. (context-binding-free)</p>
+
+<h3 id="tips-and-annotations">Tips and Annotations</h3></div></div><div class="code"><div class="wrapper">  <span class="nx">p</span><span class="p">.</span><span class="nx">_go</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(){</span>
     
     <span class="kd">var</span> <span class="nx">callback</span><span class="p">;</span>
     
@@ -193,36 +251,27 @@ steps</p></div></div><div class="code"><div class="wrapper">        <span class=
       <span class="k">return</span> <span class="k">this</span><span class="p">;</span>
     <span class="p">}</span>
     
-    <span class="nx">callback</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">cursor</span><span class="p">.</span><span class="nx">callback</span><span class="p">;</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>reset lastCalls array</p></div></div><div class="code"><div class="wrapper">    <span class="k">this</span><span class="p">.</span><span class="nx">cursor</span><span class="p">.</span><span class="nx">lastCalls</span> <span class="o">=</span> <span class="p">[];</span>
+    <span class="nx">callback</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">cursor</span><span class="p">.</span><span class="nx">callback</span><span class="p">;</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><ul>
+<li><code>_go()</code> will internally setup/normalize the parameters </li>
+</ul></div></div><div class="code"><div class="wrapper">    <span class="k">this</span><span class="p">.</span><span class="nx">cursor</span><span class="p">.</span><span class="nx">lastCalls</span> <span class="o">=</span> <span class="p">[];</span>
     
     <span class="k">if</span> <span class="p">(</span><span class="nx">callback</span> <span class="o">==</span> <span class="kc">null</span><span class="p">){</span>
       <span class="k">return</span> <span class="k">this</span><span class="p">;</span>
     <span class="p">}</span>
-    </div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>advance to next</p></div></div><div class="code"><div class="wrapper">    <span class="k">this</span><span class="p">.</span><span class="nx">cursor</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">cursor</span><span class="p">.</span><span class="nx">next</span><span class="p">;</span>
+    </div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>and then advance to next</p></div></div><div class="code"><div class="wrapper">    <span class="k">this</span><span class="p">.</span><span class="nx">cursor</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">cursor</span><span class="p">.</span><span class="nx">next</span><span class="p">;</span>
 
-    <span class="kd">var</span> <span class="nx">result</span> <span class="o">=</span> <span class="nx">callback</span><span class="p">.</span><span class="nx">apply</span><span class="p">(</span><span class="k">this</span><span class="p">,</span> <span class="nx">arguments</span><span class="p">);</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>go to next step direclty if there is return value</p></div></div><div class="code"><div class="wrapper">        <span class="k">if</span> <span class="p">(</span><span class="nx">result</span> <span class="o">!==</span> <span class="kc">undefined</span><span class="p">){</span>
+    <span class="kd">var</span> <span class="nx">result</span> <span class="o">=</span> <span class="nx">callback</span><span class="p">.</span><span class="nx">apply</span><span class="p">(</span><span class="k">this</span><span class="p">,</span> <span class="nx">arguments</span><span class="p">);</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><ul>
+<li>_go() will also check if the <code>beat</code> has a return value
+if there is, then consider the result as the parameter of
+next <code>beat</code>
+p.s. return false will also cause immediate execution of next
+<code>beat</code></li>
+</ul></div></div><div class="code"><div class="wrapper">        <span class="k">if</span> <span class="p">(</span><span class="nx">result</span> <span class="o">!==</span> <span class="kc">undefined</span><span class="p">){</span>
             <span class="k">this</span><span class="p">.</span><span class="nx">go</span><span class="p">(</span><span class="nx">result</span><span class="p">);</span>
         <span class="p">}</span>
     
     <span class="k">return</span> <span class="k">this</span><span class="p">;</span>
-  <span class="p">};</span>
-  <span class="cm">/**</span>
-<span class="cm">   * @function go</span>
-<span class="cm">   * Start next step immediately </span>
-<span class="cm">   * (this function will always be executed</span>
-<span class="cm">   * with context pointed to current instance of steps)</span>
-<span class="cm">   **/</span>
-  <span class="nx">p</span><span class="p">.</span><span class="nx">go</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(){</span>
-    <span class="k">return</span> <span class="k">this</span><span class="p">.</span><span class="nx">_go</span><span class="p">.</span><span class="nx">apply</span><span class="p">(</span><span class="k">this</span><span class="p">,</span> <span class="nx">arguments</span><span class="p">);</span>
-  <span class="p">};</span>
-
-  <span class="cm">/**</span>
-<span class="cm">   * @function go</span>
-<span class="cm">   * Start next step when code execution thread idle</span>
-<span class="cm">   * (this function will always be executed</span>
-<span class="cm">   * with context pointed to current instance of steps)</span>
-<span class="cm">   **/</span>
-  <span class="nx">p</span><span class="p">.</span><span class="nx">defer</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(){</span>
+  <span class="p">};</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h2 id="defer">defer</h2></div></div></div><div class="segment"><div class="code"><div class="wrapper">  <span class="nx">p</span><span class="p">.</span><span class="nx">defer</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(){</span>
     <span class="nx">setTimeout</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">go</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
     <span class="k">return</span> <span class="k">this</span><span class="p">;</span>
   <span class="p">};</span>
