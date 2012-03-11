@@ -101,6 +101,25 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
               "type": "heading",
               "data": {
                 "level": 2,
+                "title": "_createNode",
+                "slug": "-createnode"
+              },
+              "depth": 2,
+              "children": [
+                {
+                  "type": "heading",
+                  "data": {
+                    "level": 3,
+                    "title": "Schema",
+                    "slug": "schema"
+                  },
+                  "depth": 3
+                }
+              ]
+            }, {
+              "type": "heading",
+              "data": {
+                "level": 2,
                 "title": "beat",
                 "slug": "beat"
               },
@@ -217,6 +236,25 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
               "type": "heading",
               "data": {
                 "level": 2,
+                "title": "next",
+                "slug": "next"
+              },
+              "depth": 2,
+              "children": [
+                {
+                  "type": "heading",
+                  "data": {
+                    "level": 3,
+                    "title": "Tips and Annotation",
+                    "slug": "tips-and-annotation"
+                  },
+                  "depth": 3
+                }
+              ]
+            }, {
+              "type": "heading",
+              "data": {
+                "level": 2,
                 "title": "TODO",
                 "slug": "todo"
               },
@@ -242,16 +280,24 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
                   "type": "heading",
                   "data": {
                     "level": 3,
-                    "title": "next",
-                    "slug": "next"
+                    "title": "prev",
+                    "slug": "prev"
                   },
                   "depth": 3
                 }, {
                   "type": "heading",
                   "data": {
                     "level": 3,
-                    "title": "prev",
-                    "slug": "prev"
+                    "title": "index",
+                    "slug": "index"
+                  },
+                  "depth": 3
+                }, {
+                  "type": "heading",
+                  "data": {
+                    "level": 3,
+                    "title": "reset",
+                    "slug": "reset"
                   },
                   "depth": 3
                 }, {
@@ -318,6 +364,25 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
                 "level": 3,
                 "title": "Tips and Annotations",
                 "slug": "tips-and-annotations"
+              },
+              "depth": 3
+            }
+          ]
+        }, {
+          "type": "heading",
+          "data": {
+            "level": 2,
+            "title": "_createNode",
+            "slug": "-createnode"
+          },
+          "depth": 2,
+          "children": [
+            {
+              "type": "heading",
+              "data": {
+                "level": 3,
+                "title": "Schema",
+                "slug": "schema"
               },
               "depth": 3
             }
@@ -442,6 +507,25 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
           "type": "heading",
           "data": {
             "level": 2,
+            "title": "next",
+            "slug": "next"
+          },
+          "depth": 2,
+          "children": [
+            {
+              "type": "heading",
+              "data": {
+                "level": 3,
+                "title": "Tips and Annotation",
+                "slug": "tips-and-annotation"
+              },
+              "depth": 3
+            }
+          ]
+        }, {
+          "type": "heading",
+          "data": {
+            "level": 2,
             "title": "TODO",
             "slug": "todo"
           },
@@ -467,16 +551,24 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
               "type": "heading",
               "data": {
                 "level": 3,
-                "title": "next",
-                "slug": "next"
+                "title": "prev",
+                "slug": "prev"
               },
               "depth": 3
             }, {
               "type": "heading",
               "data": {
                 "level": 3,
-                "title": "prev",
-                "slug": "prev"
+                "title": "index",
+                "slug": "index"
+              },
+              "depth": 3
+            }, {
+              "type": "heading",
+              "data": {
+                "level": 3,
+                "title": "reset",
+                "slug": "reset"
               },
               "depth": 3
             }, {
