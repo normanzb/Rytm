@@ -1,81 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><title>Rytm</title></head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0"><meta name="groc-relative-root" content=""><meta name="groc-document-path" content="Rytm"><meta name="groc-project-path" content="Rytm.js"><link rel="stylesheet" type="text/css" media="all" href="assets/style.css"><script type="text/javascript" src="assets/behavior.js"></script><body><div id="meta"><div class="file-path">Rytm.js</div></div><div id="document"><div class="segment"></div><div class="segment"><div class="comments"><div class="wrapper"><h1 id="rytm">Rytm</h1></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>Rytm is a asynchronous flow control library that turns nested chaos into linear, readable
-sweetness.</p></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h1 id="the-reasons-for-rytm">The Reasons for Rytm</h1></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>Says we are going to:</p></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><ol>
-<li>Wait for user input.</li>
-<li>Send user input to server, and wait for response.</li>
-<li>Slide down the message box and in the meantime, fade in an image.</li>
-<li>After above animation done, fade in the message which retrieved in step #2.</li>
-</ol></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>To get above jobs done, inexperienced JavaScript developer usually generate code like
-this:</p>
-
-<pre><code>// hook on the input event and waiting for 'enter'
-txtUserInput.bind('input', function(evt){
-    if (evt.keyCode == 13){
-
-        // post the user input to server and wait for response.
-        $.post('/api', txtUserInput.val(), function(data){
-
-            var msg = data.message, animationCount = 0;
-
-            divMsgBox.slideDown(function(){
-                animationCount++
-                checkIfAnimationDone();
-            })
-
-            imgBanner.fadeIn(function(){
-                animationCount++
-                checkIfAnimationDone();
-            })
-
-            function checkIfAnimationDone(){
-                if (animationCount &gt;= 2){
-                    divMsgInner.html(msg).fadeIn();
-                }
-            }
-        }
-        });
-    }
-});
-</code></pre></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>This is a really common task in asynchronous programming world but the code result doesn't 
-look good enough:</p></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><ol>
-<li>Too many nested blocks reduced your code readibility.</li>
-<li>Hard to understand the logic, you need to trace the block by block to see what happened 
-eventually.</li>
-<li>Error prone.</li>
-<li>The last fade-in animation must be done after the first 2 animation, writing code to check 
-task status is tedious and waste of your time.</li>
-</ol></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>By using a flow control library such as Rytm, writing code snippet for above task can be much
-safer, simpler, and productivity, and the code become more readable and compact:</p></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><pre><code>var r = new Rytm(function(){
-
-    txtUserInput.bind('input', this.next())
-
-}, function(evt){
-
-   if (evt.keyCode == 13){
-       // tell Rytm to go to next step directly   
-       return true;
-   }
-
-}, function(){
-
-   $.postMessage('/api', txtUserInput.val(), this.go);
-
-}, function(data){
-
-   // pass the data to next beat
-   this.nextArgs(data);
-   // or :
-   // this.next(this.next.bind(this, data));
-
-   divMsgBox.slideDown(this.all());
-   imgBanner.fadeIn(this.all());
-
- }, function(data){
-
-    divMsgInner.html(data.msg).fadeIn();
-
- })
- .go();
-</code></pre></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h1 id="multiple-environment-support">Multiple environment support</h1>
+<!DOCTYPE html><html lang="en"><head><title>Rytm</title></head><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0, maximum-scale=1.0"><meta name="groc-relative-root" content=""><meta name="groc-document-path" content="Rytm"><meta name="groc-project-path" content="Rytm.js"><link rel="stylesheet" type="text/css" media="all" href="assets/style.css"><script type="text/javascript" src="assets/behavior.js"></script><body><div id="meta"><div class="file-path">Rytm.js</div></div><div id="document"><div class="segment"><div class="comments"><div class="wrapper"><h1 id="internal-and-external-apis">Internal and External APIs</h1></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h2 id="multiple-environment-support">Multiple environment support</h2>
 
 <p>Rytm supports multiply JavaScript environment including:</p></div></div><div class="code"><div class="wrapper"><span class="p">;(</span><span class="kd">function</span><span class="p">(</span><span class="nx">factory</span><span class="p">){</span>
     <span class="kd">var</span> <span class="nx">Rytm</span> <span class="o">=</span> <span class="nx">factory</span><span class="p">(</span><span class="k">this</span><span class="p">);</span>
@@ -89,12 +12,14 @@ safer, simpler, and productivity, and the code become more readable and compact:
         <span class="p">}</span>
         <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">exports</span><span class="p">){</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><ul>
 <li>Nodejs module loading:
-<code>var rytm = require('path/to/rytm');</code></li>
+<code>var Rytm = require('path/to/rytm');</code></li>
 </ul></div></div><div class="code"><div class="wrapper">            <span class="k">this</span><span class="p">.</span><span class="nx">exports</span> <span class="o">=</span> <span class="nx">Rytm</span><span class="p">;</span>
         <span class="p">}</span>
     <span class="p">}</span>
 
-<span class="p">})</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h1 id="internal-and-external-apis">Internal and External APIs</h1></div></div></div><div class="segment"><div class="code"><div class="wrapper"><span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">global</span><span class="p">,</span> <span class="nx">undef</span><span class="p">){</span>
+<span class="p">})</span>
+
+<span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">global</span><span class="p">,</span> <span class="nx">undef</span><span class="p">){</span>
     <span class="s2">&quot;use strict&quot;</span><span class="p">;</span>
 
     <span class="cm">/* no operation func */</span>
@@ -112,12 +37,12 @@ safer, simpler, and productivity, and the code become more readable and compact:
 
 <p>Create Rytm instance and also loads the tasks</p>
 
-<p><code>var r = new Rytm(beat1, beat2, beat3 ... )</code></p>
+<p><code>var r = new Rytm(task1, task2, task3 ... )</code></p>
 
 <h3 id="parameters">Parameters</h3>
 
 <ul>
-<li>beat1-n: Tasks/callbacks which to be executed in order</li>
+<li>task1-n: Tasks/callbacks which to be executed in order</li>
 </ul>
 
 <h3 id="tips-and-annotations">Tips and Annotations</h3>
@@ -168,11 +93,31 @@ tasks</li>
     <span class="p">}</span>
 
   <span class="kd">var</span> <span class="nx">p</span> <span class="o">=</span> <span class="nx">Rytm</span><span class="p">.</span><span class="nx">prototype</span><span class="p">;</span>
-  <span class="nx">p</span><span class="p">.</span><span class="nx">_createNode</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">callback</span><span class="p">,</span> <span class="nx">next</span><span class="p">){</span>
+
+    <span class="nx">p</span><span class="p">.</span><span class="nx">_inNextCallContext</span> <span class="o">=</span> <span class="kc">false</span><span class="p">;</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h2 id="-createnode">_createNode</h2>
+
+<p>A private method which not supposed to be used externally,
+it creates a node which can be used in the task sequence.</p>
+
+<h3 id="schema">Schema</h3>
+
+<pre><code> {
+     // the actual 'task function' in current task
+     callback: actuallTaskFunc,
+     // the reference to next node in sequence
+     next: nextNode,
+     // An array that stores callback which returned 
+     // by `all()`
+     lastCalls: [],
+     // ticked = true means execution of current task is done
+     // and it is safe to advance to next task
+     ticked: false
+ }
+</code></pre></div></div><div class="code"><div class="wrapper">  <span class="nx">p</span><span class="p">.</span><span class="nx">_createNode</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">callback</span><span class="p">,</span> <span class="nx">next</span><span class="p">){</span>
     <span class="k">if</span> <span class="p">(</span><span class="nx">next</span> <span class="o">===</span> <span class="nx">undef</span><span class="p">){</span>
       <span class="nx">next</span> <span class="o">=</span> <span class="kc">null</span><span class="p">;</span>
     <span class="p">}</span>
-    <span class="kd">var</span> <span class="nx">ret</span> <span class="o">=</span> <span class="p">{</span><span class="nx">callback</span><span class="o">:</span> <span class="nx">callback</span><span class="p">,</span> <span class="nx">next</span><span class="o">:</span> <span class="nx">next</span><span class="p">};</span>
+    <span class="kd">var</span> <span class="nx">ret</span> <span class="o">=</span> <span class="p">{</span><span class="nx">callback</span><span class="o">:</span> <span class="nx">callback</span><span class="p">,</span> <span class="nx">next</span><span class="o">:</span> <span class="nx">next</span><span class="p">,</span> <span class="nx">nextWrapper</span><span class="o">:</span> <span class="kc">null</span><span class="p">};</span>
     <span class="k">return</span> <span class="nx">ret</span><span class="p">;</span>
   <span class="p">};</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h2 id="beat">beat</h2>
 
@@ -241,11 +186,25 @@ worrying the changing of context.</p>
 })).go();
 </code></pre></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h2 id="-go">_go</h2>
 
-<p>When called, execute the next step immediately. (context-binding-free)</p>
+<p>When called, execute the next step immediately (context-binding-free).</p>
 
 <h3 id="tips-and-annotations">Tips and Annotations</h3></div></div><div class="code"><div class="wrapper">  <span class="nx">p</span><span class="p">.</span><span class="nx">_go</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(){</span>
     
-    <span class="kd">var</span> <span class="nx">callback</span><span class="p">;</span>
+    <span class="kd">var</span> <span class="nx">callback</span><span class="p">;</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><ul>
+<li>_go() will check if we are in a nested <code>next()</code> calling context
+by visiting _inNextCallContext
+if we are, we will have to skip same step because they might already
+be called. </li>
+</ul></div></div><div class="code"><div class="wrapper">        <span class="k">while</span> <span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">_inNextCallContext</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">){</span>
+            <span class="k">this</span><span class="p">.</span><span class="nx">_inNextCallContext</span><span class="o">--</span><span class="p">;</span>
+            <span class="k">if</span> <span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">cursor</span><span class="p">.</span><span class="nx">next</span><span class="p">){</span>
+                <span class="k">this</span><span class="p">.</span><span class="nx">cursor</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">cursor</span><span class="p">.</span><span class="nx">next</span><span class="p">;</span>
+            <span class="p">}</span>
+            <span class="k">else</span><span class="p">{</span>
+                <span class="k">throw</span> <span class="s2">&quot;Rytm: Strangely we are in a nested context &quot;</span>
+                    <span class="s2">&quot;but there is no cursor.next available, must be a bug.&quot;</span><span class="p">;</span>
+            <span class="p">}</span>
+        <span class="p">}</span>
     
     <span class="k">if</span> <span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">cursor</span> <span class="o">==</span> <span class="kc">null</span><span class="p">){</span>
       <span class="k">return</span> <span class="k">this</span><span class="p">;</span>
@@ -261,27 +220,28 @@ worrying the changing of context.</p>
     </div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>and then advance to next</p></div></div><div class="code"><div class="wrapper">    <span class="k">this</span><span class="p">.</span><span class="nx">cursor</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">cursor</span><span class="p">.</span><span class="nx">next</span><span class="p">;</span>
 
     <span class="kd">var</span> <span class="nx">result</span> <span class="o">=</span> <span class="nx">callback</span><span class="p">.</span><span class="nx">apply</span><span class="p">(</span><span class="k">this</span><span class="p">,</span> <span class="nx">arguments</span><span class="p">);</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><ul>
-<li>_go() will also check if the <code>beat</code> has a return value
+<li>_go() will also check if the current task has a return value
 if there is, then consider the result as the parameter of
-next <code>beat</code>
+next task
 p.s. return false will also cause immediate execution of next
 <code>beat</code></li>
-</ul></div></div><div class="code"><div class="wrapper">        <span class="k">if</span> <span class="p">(</span><span class="nx">result</span> <span class="o">!==</span> <span class="kc">undefined</span><span class="p">){</span>
+</ul></div></div><div class="code"><div class="wrapper">        <span class="k">if</span> <span class="p">(</span><span class="nx">result</span> <span class="o">!==</span> <span class="nx">undef</span><span class="p">){</span>
             <span class="k">this</span><span class="p">.</span><span class="nx">go</span><span class="p">(</span><span class="nx">result</span><span class="p">);</span>
         <span class="p">}</span>
     
     <span class="k">return</span> <span class="k">this</span><span class="p">;</span>
-  <span class="p">};</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h2 id="defer">defer</h2></div></div></div><div class="segment"><div class="code"><div class="wrapper">  <span class="nx">p</span><span class="p">.</span><span class="nx">defer</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(){</span>
+  <span class="p">};</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h2 id="defer">defer</h2>
+
+<p>Execute the next task in the sequence, but delay a bit, same as 
+appending a wait(0) between current task and next task.
+this is useful when you want to leave the working idle so runtime
+can pick some more important task to process.</p></div></div><div class="code"><div class="wrapper">  <span class="nx">p</span><span class="p">.</span><span class="nx">defer</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(){</span>
     <span class="nx">setTimeout</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">go</span><span class="p">,</span> <span class="mi">0</span><span class="p">);</span>
     <span class="k">return</span> <span class="k">this</span><span class="p">;</span>
-  <span class="p">};</span>
+  <span class="p">};</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h2 id="once">once</h2>
 
-  <span class="cm">/**</span>
-<span class="cm">   * @function once</span>
-<span class="cm">   * Return a callback, once the callback is called, go to next step and ignore </span>
-<span class="cm">   * the other calls which defined in current step</span>
-<span class="cm">   */</span>
-  <span class="nx">p</span><span class="p">.</span><span class="nx">once</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(){</span>
+<p>Return a new callback, once any of the returned callbacks is called,
+go to next step and ignore the other returned callbacks.</p></div></div><div class="code"><div class="wrapper">  <span class="nx">p</span><span class="p">.</span><span class="nx">once</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(){</span>
     <span class="kd">var</span> <span class="nx">cur</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">cursor</span><span class="p">,</span>
       <span class="nx">go</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">go</span><span class="p">,</span>
       <span class="nx">scope</span> <span class="o">=</span> <span class="k">this</span><span class="p">;</span>
@@ -293,24 +253,66 @@ p.s. return false will also cause immediate execution of next
 
       <span class="nx">go</span><span class="p">();</span>
     <span class="p">};</span>
-  <span class="p">};</span>
+  <span class="p">};</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h2 id="all">all</h2>
 
-  <span class="cm">/**</span>
-<span class="cm">     * @function all</span>
-<span class="cm">     * Return a new callback each time last() is called, will go to next step once all generated callback is called</span>
-<span class="cm">     * at least once.</span>
-<span class="cm">     */</span>
-    <span class="nx">p</span><span class="p">.</span><span class="nx">all</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(){</span>
+<p>Return a new callback each time <code>all()</code> is called, will go to next step 
+once all returned callbacks are called</p>
+
+<h3 id="tips-and-annotation">Tips and Annotation</h3>
+
+<ul>
+<li><p>It is suggested to call <code>all()</code> in the same synchronous context, if <code>all()</code>
+is called in a delayed asynchronous context, the 'next task' may be executed
+ealier then you expected.</p>
+
+<pre><code>var r = Rytm(function(){
+
+
+  doAnimate(this.all());
+
+
+  // bbaaaaaaaad! DO NOT invoke all() in a delayed call
+  // animation may be finished before someElement gets clicked
+  // at that time, the only one callback was returned by 'all()'
+  // thus, next task will be executed immedately.
+  someElement.bind('click', function(){
+    r.all();
+  });
+}, function(){
+    blahblah();
+});
+</code></pre></li>
+</ul></div></div><div class="code"><div class="wrapper">    <span class="nx">p</span><span class="p">.</span><span class="nx">all</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(){</span>
         <span class="kd">var</span> <span class="nx">cur</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">cursor</span><span class="p">,</span>
             <span class="nx">go</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">go</span><span class="p">;</span>
 
-        <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">cur</span><span class="p">){</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>means we reached the end</p></div></div><div class="code"><div class="wrapper">          <span class="k">return</span> <span class="nx">noop</span><span class="p">;</span>
-        <span class="p">}</span>
-
-        <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">cur</span><span class="p">.</span><span class="nx">lastCalls</span><span class="p">){</span>
+        <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">cur</span><span class="p">){</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><ul>
+<li>If all tasks are executed and then <code>all()</code> was called, 
+it will return an <code>noop</code></li>
+</ul></div></div><div class="code"><div class="wrapper">          <span class="k">return</span> <span class="nx">noop</span><span class="p">;</span>
+        <span class="p">}</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><ul>
+<li>Internally use <code>lastCalls[]</code> to store 'generated callback'.</li>
+</ul></div></div><div class="code"><div class="wrapper">        <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">cur</span><span class="p">.</span><span class="nx">lastCalls</span><span class="p">){</span>
             <span class="nx">cur</span><span class="p">.</span><span class="nx">lastCalls</span> <span class="o">=</span> <span class="p">[];</span>
-        <span class="p">}</span>
-        <span class="k">if</span> <span class="p">(</span><span class="nx">cur</span><span class="p">.</span><span class="nx">ticked</span> <span class="o">==</span> <span class="kc">null</span><span class="p">){</span>
+        <span class="p">}</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><ul>
+<li><p>If the 'returned callback' is executed within the generating 
+synchronous context, now Rytm will mondatorily delay the actual execution of 
+next task in a asynchronous context.
+This is to prevent a usage pitfall in old version of Rytm:</p>
+
+<pre><code>s.step(function(){
+    // this will cause problem if we don't delay the execution.
+    // Because the first 'returned callback' will be executed 
+    // immediately after it is produced and cause we advanced to next step
+    // before 2nd all().
+    executeTheCallbackImmediately(s.all());
+    executeTheCallbackImmediately(s.all());
+})
+</code></pre>
+
+<p>Here we tick the <code>cur</code> in an asychronous context to tell if the calling is 
+happened async or sync</p></li>
+</ul></div></div><div class="code"><div class="wrapper">        <span class="k">if</span> <span class="p">(</span><span class="nx">cur</span><span class="p">.</span><span class="nx">ticked</span> <span class="o">==</span> <span class="kc">null</span><span class="p">){</span>
             <span class="nx">cur</span><span class="p">.</span><span class="nx">ticked</span> <span class="o">=</span> <span class="kc">false</span><span class="p">;</span>
             <span class="nx">setTimeout</span><span class="p">(</span><span class="kd">function</span><span class="p">(){</span>
                 <span class="nx">cur</span><span class="p">.</span><span class="nx">ticked</span> <span class="o">=</span> <span class="kc">true</span><span class="p">;</span>
@@ -321,13 +323,7 @@ p.s. return false will also cause immediate execution of next
             <span class="kd">var</span> <span class="nx">scope</span> <span class="o">=</span> <span class="k">this</span><span class="p">,</span>
                 <span class="nx">args</span> <span class="o">=</span> <span class="nx">arguments</span><span class="p">;</span>
             
-            <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">cur</span><span class="p">.</span><span class="nx">ticked</span><span class="p">){</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>if it is executed within the calling TASK, we delay the actual execution
-to next TASK
-this is to prevent a usage pitfall:
-s.step(function(){
-// this will cause problem
-executeTheCallbackImmediately(s.all());
-executeTheCallbackImmediately(s.all());</p></div></div><div class="code"><div class="wrapper">                <span class="c1">//})</span>
+            <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">cur</span><span class="p">.</span><span class="nx">ticked</span><span class="p">){</span>
                 <span class="nx">setTimeout</span><span class="p">(</span><span class="kd">function</span><span class="p">(){</span>
                     <span class="k">return</span> <span class="nx">ret</span><span class="p">.</span><span class="nx">apply</span><span class="p">(</span><span class="nx">scope</span><span class="p">,</span> <span class="nx">args</span><span class="p">);</span>
                 <span class="p">},</span> <span class="mi">0</span><span class="p">);</span>
@@ -352,18 +348,49 @@ executeTheCallbackImmediately(s.all());</p></div></div><div class="code"><div cl
         <span class="nx">cur</span><span class="p">.</span><span class="nx">lastCalls</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="nx">ret</span><span class="p">);</span>
     
         <span class="k">return</span> <span class="nx">ret</span><span class="p">;</span> 
+    <span class="p">};</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h2 id="next">next</h2>
+
+<p>A reference to the next task.</p>
+
+<p>The difference between <code>next</code> and<code>go</code> is:
+once <code>go</code> gets called, we will immediately advance the internal cursor to next step
+so if the <code>go</code> gets called multiple time, your tasks in sequence will be 
+consumed faster then expected.
+<code>next()</code> will make sure that the 'cursor advancing' actually is done in the <code>go()</code> 
+call of the next task. </p>
+
+<h3 id="tips-and-annotation">Tips and Annotation</h3></div></div><div class="code"><div class="wrapper">    <span class="nx">p</span><span class="p">.</span><span class="nx">next</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(){</span>
+        <span class="kd">var</span> <span class="nx">cur</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">cursor</span><span class="p">,</span>
+            <span class="nx">go</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">go</span><span class="p">;</span>
+        
+        <span class="k">if</span> <span class="p">(</span><span class="nx">cur</span><span class="p">.</span><span class="nx">next</span> <span class="o">&amp;&amp;</span> <span class="nx">cur</span><span class="p">.</span><span class="nx">next</span><span class="p">.</span><span class="nx">callback</span><span class="p">){</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><ul>
+<li>Private member _inNextCallContext indicates how many level of nested next() is called
+correspondingly, later call to <code>go()</code> will have to skip _inNextCallContext
+tasks.</li>
+</ul></div></div><div class="code"><div class="wrapper">            <span class="k">this</span><span class="p">.</span><span class="nx">_inNextCallContext</span><span class="o">++</span><span class="p">;</span>
+
+            <span class="kd">var</span> <span class="nx">result</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">cur</span><span class="p">.</span><span class="nx">next</span><span class="p">.</span><span class="nx">callback</span><span class="p">.</span><span class="nx">call</span><span class="p">(</span><span class="k">this</span><span class="p">);</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><ul>
+<li><code>next</code> makes sure the behavior is the same as <code>go</code> when the task has return value.
+Return anything other than undefine will cause advancing to next task immediately</li>
+</ul></div></div><div class="code"><div class="wrapper">            <span class="k">if</span> <span class="p">(</span><span class="nx">result</span> <span class="o">!==</span> <span class="nx">undef</span><span class="p">){</span>
+                <span class="k">this</span><span class="p">.</span><span class="nx">go</span><span class="p">();</span>
+            <span class="p">}</span>
+
+            <span class="k">this</span><span class="p">.</span><span class="nx">_inNextCallContext</span><span class="o">--</span><span class="p">;</span>
+        <span class="p">}</span>
+
+        <span class="k">return</span> <span class="kc">null</span><span class="p">;</span>
+
     <span class="p">};</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h2 id="todo">TODO</h2></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h3 id="reverse">reverse</h3>
 
 <h3 id="bounce">bounce</h3>
 
-<p>If we are at the end, reverse the sequence and go</p></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h3 id="next">next</h3>
+<p>If we are at the end, reverse the sequence and go</p></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h3 id="prev">prev</h3>
 
-<p>Return next beat, next should be a getter/setter that allow</p></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h3 id="prev">prev</h3>
-
-<p>Return prev beat</p></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h3 id="group">group</h3></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h3 id="dataparams">data/params</h3>
+<p>Return prev beat</p></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h3 id="index">index</h3></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h3 id="reset">reset</h3></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h3 id="group">group</h3></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h3 id="dataparams">data/params</h3>
 
 <p>To hold the parameters to next beat</p>
 
-<h3 id="test">test</h3></div></div><div class="code"><div class="wrapper">  
+<h3 id="tests">tests</h3></div></div><div class="code"><div class="wrapper">  
   <span class="k">return</span> <span class="nx">Rytm</span><span class="p">;</span>
 <span class="p">});</span></div></div></div></div></body></html>

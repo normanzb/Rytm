@@ -15,7 +15,7 @@
         }
         else if (this.exports){
             // * Nodejs module loading:
-            //   `var rytm = require('path/to/rytm');`
+            //   `var Rytm = require('path/to/rytm');`
             this.exports = Rytm;
         }
     }
@@ -42,10 +42,10 @@
     //
     // Create Rytm instance and also loads the tasks
     // 
-    // `var r = new Rytm(beat1, beat2, beat3 ... )`
+    // `var r = new Rytm(task1, task2, task3 ... )`
     //
     // ### Parameters
-    // * beat1-n: Tasks/callbacks which to be executed in order
+    // * task1-n: Tasks/callbacks which to be executed in order
     // 
     // ### Tips and Annotations
     // * Tasks can also be added later by calling `instance.beat`
@@ -96,11 +96,31 @@
     }
 
 	var p = Rytm.prototype;
+
+    p._inNextCallContext = false;
+
+    // ## _createNode
+    // 
+    // A private method which not supposed to be used externally,
+    // it creates a node which can be used in the task sequence.
+    // ### Schema
+    //      {
+    //          // the actual 'task function' in current task
+    //          callback: actuallTaskFunc,
+    //          // the reference to next node in sequence
+    //          next: nextNode,
+    //          // An array that stores callback which returned 
+    //          // by `all()`
+    //          lastCalls: [],
+    //          // ticked = true means execution of current task is done
+    //          // and it is safe to advance to next task
+    //          ticked: false
+    //      }
 	p._createNode = function(callback, next){
 		if (next === undef){
 			next = null;
 		}
-		var ret = {callback: callback, next: next};
+		var ret = {callback: callback, next: next, nextWrapper: null};
 		return ret;
 	};
 
@@ -177,12 +197,27 @@
 
 	// ## _go
     //
-    // When called, execute the next step immediately. (context-binding-free)
+    // When called, execute the next step immediately (context-binding-free).
     //
     // ### Tips and Annotations
 	p._go = function(){
 		
 		var callback;
+
+        // * _go() will check if we are in a nested `next()` calling context
+        //  by visiting _inNextCallContext
+        //  if we are, we will have to skip same step because they might already
+        //  be called. 
+        while (this._inNextCallContext > 0){
+            this._inNextCallContext--;
+            if (this.cursor.next){
+                this.cursor = this.cursor.next;
+            }
+            else{
+                throw "Rytm: Strangely we are in a nested context "
+                    "but there is no cursor.next available, must be a bug.";
+            }
+        }
 		
 		if (this.cursor == null){
 			return this;
@@ -207,7 +242,7 @@
         //   next task
         //   p.s. return false will also cause immediate execution of next
         //   `beat`
-        if (result !== undefined){
+        if (result !== undef){
             this.go(result);
         }
 		
@@ -216,8 +251,10 @@
 
     // ## defer
     // 
-    // Execute the next task in the sequence, same as appending a wait(0) between 
-    // current task and next task
+    // Execute the next task in the sequence, but delay a bit, same as 
+    // appending a wait(0) between current task and next task.
+    // this is useful when you want to leave the working idle so runtime
+    // can pick some more important task to process.
 
 	p.defer = function(){
 		setTimeout(this.go, 0);
@@ -251,21 +288,22 @@
     // * It is suggested to call `all()` in the same synchronous context, if `all()`
     //   is called in a delayed asynchronous context, the 'next task' may be executed
     //   ealier then you expected.
-
-    //     var r = Rytm(function(){
     //
-    //         doAnimate(this.all());
-    //
-    //         // bbaaaaaaaad! DO NOT invoke all() in a delayed call
-    //         // animation may be finished before someElement gets clicked
-    //         // at that time, the only one callback was returned by 'all()'
-    //         // thus, next task will be executed immedately.
-    //         someElement.bind('click', function(){
+    //         var r = Rytm(function(){
+    //    
+    //           doAnimate(this.all());
+    //    
+    //           // bbaaaaaaaad! DO NOT invoke all() in a delayed call
+    //           // animation may be finished before someElement gets clicked
+    //           // at that time, the only one callback was returned by 'all()'
+    //           // thus, next task will be executed immedately.
+    //           someElement.bind('click', function(){
     //             r.all();
+    //           });
+    //         }, function(){
+    //             blahblah();
     //         });
-    //     }, function(){
-    //         blahblah();
-    //     });
+    //          
 
     p.all = function(){
         var cur = this.cursor,
@@ -277,9 +315,27 @@
         	return noop;
         }
 
+        // * Internally use `lastCalls[]` to store 'generated callback'.
         if (!cur.lastCalls){
             cur.lastCalls = [];
         }
+
+        // * If the 'returned callback' is executed within the generating 
+        //   synchronous context, now Rytm will mondatorily delay the actual execution of 
+        //   next task in a asynchronous context.
+        //   This is to prevent a usage pitfall in old version of Rytm:
+        //
+        //         s.step(function(){
+        //             // this will cause problem if we don't delay the execution.
+        //             // Because the first 'returned callback' will be executed 
+        //             // immediately after it is produced and cause we advanced to next step
+        //             // before 2nd all().
+        //             executeTheCallbackImmediately(s.all());
+        //             executeTheCallbackImmediately(s.all());
+        //         })
+        //
+        //   Here we tick the `cur` in an asychronous context to tell if the calling is 
+        //   happened async or sync
         if (cur.ticked == null){
             cur.ticked = false;
             setTimeout(function(){
@@ -292,18 +348,6 @@
                 args = arguments;
             
             if (!cur.ticked){
-                // * If the 'returned callback' is executed within the generating 
-                //   synchronous context, now Rytm will mondatorily delay the actual execution of 
-                //   next task in a asynchronous context.
-                //   This is to prevent a usage pitfall in old version of Rytm:
-                //     s.step(function(){
-                //         // this will cause problem if we don't delay the execution.
-                //         // Because the first 'returned callback' will be executed 
-                //         // immediately after it is produced and cause we advanced to next step
-                //         // before 2nd `all()`.
-                //         executeTheCallbackImmediately(s.all());
-                //         executeTheCallbackImmediately(s.all());
-                //     })
                 setTimeout(function(){
                     return ret.apply(scope, args);
                 }, 0);
@@ -331,22 +375,63 @@
     };
 
 
+    // ## next
+    //
+    // A reference to the next task.
+    //
+    // The difference between `next` and`go` is:
+    // once `go` gets called, we will immediately advance the internal cursor to next step
+    // so if the `go` gets called multiple time, your tasks in sequence will be 
+    // consumed faster then expected.
+    // `next()` will make sure that the 'cursor advancing' actually is done in the `go()` 
+    // call of the next task. 
+    //
+    // ### Tips and Annotation
+    p.next = function(){
+        var cur = this.cursor,
+            go = this.go;
+        
+        if (cur.next && cur.next.callback){
+            // * Private member _inNextCallContext indicates how many level of nested next() is called
+            //   correspondingly, later call to `go()` will have to skip _inNextCallContext
+            //   tasks.
+            this._inNextCallContext++;
+
+            var result = this.cur.next.callback.call(this);
+
+            // * `next` makes sure the behavior is the same as `go` when the task has return value.
+            //   Return anything other than undefine will cause advancing to next task immediately
+            if (result !== undef){
+                this.go();
+            }
+
+            this._inNextCallContext--;
+        }
+
+        return null;
+
+    };
+
+
 // ## TODO
 
 // ### reverse
 // ### bounce
 // If we are at the end, reverse the sequence and go
 
-// ### next
-// Return next beat, next should be a getter/setter that allow
-
 // ### prev 
 // Return prev beat
+
+// ### index
+
+// ### reset
 
 // ### group
 
 // ### data/params
+//
 // To hold the parameters to next beat
+//
 // ### tests
 	
 	return Rytm;

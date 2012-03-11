@@ -59,7 +59,7 @@ safer, simpler, and productivity, and the code become more readable and compact:
 
     var r = new Rytm(function(){
 
-        txtUserInput.bind('input', this.next())
+        txtUserInput.bind('input', this.next);
 
     }, function(evt){
 
