@@ -3,7 +3,7 @@
 // ## Multiple environment support
 // Rytm supports multiply JavaScript environment including:
 
-;(function(factory){
+;(function(name, factory){
     var Rytm = factory(this);
 
     if (this.require){
@@ -18,11 +18,14 @@
             //   `var Rytm = require('path/to/rytm');`
             this.exports = Rytm;
         }
+        else{
+            this[name] = factory;
+        }
     }
 
 })
 
-(function(global, undef){
+("Rytm", function(global, undef){
     "use strict";
 
     /* no operation func */
