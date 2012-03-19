@@ -89,7 +89,7 @@
     */
     function loadSteps(args){
 
-        for(var i = 0, l < args.length; i < l; i++){
+        for(var i = 0, l = args.length; i < l; i++){
             var cur = args[i];
 
             if (typeof cur != "function"){
