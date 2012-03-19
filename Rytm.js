@@ -164,14 +164,15 @@
     // ## wait
     //
     // When called, a built-in step will be added to the sequence for pausing
-    // a specified millisecond
+    // a specified millisecond, and pass the arguments to next task.
     // 
     // * wait: Specifiy the millisecond to wait.
 	p.wait = function(timeout){
 		var s = this;
 
 		s.step(function(){
-			setTimeout(s.go, timeout);
+            var scope = this, args = arguments;
+			s.defer(timeout);
 		});
 		
 		return this;
@@ -256,8 +257,16 @@
     // this is useful when you want to leave the working idle so runtime
     // can pick some more important task to process.
 
-	p.defer = function(){
-		setTimeout(this.go, 0);
+	p.defer = function(millisecond){
+        if (arguments.length < 0 || 
+            millisecond == undefined || 
+            global.isNaN(millisecond)){
+            millisecond = 0;
+        }
+        var scope = this, args = arguments
+		setTimeout(function(){
+            this.go.apply(scope, args);
+        }, millisecond);
 		return this;
 	};
 
