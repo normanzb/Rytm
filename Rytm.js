@@ -19,6 +19,8 @@
             this.exports = Rytm;
         }
         else{
+            // * `Rytm` will be a global variable if its factory was ran 
+            //   without AMD loader
             this[name] = factory;
         }
     }
