@@ -13,10 +13,10 @@
             // `require('path/to/rytm', callback);`
             this.define(Rytm);
         }
-        else if (this.exports){
+        else if (typeof exports != 'undefined'　&& typeof module != 'undefined'){
             // * Nodejs module loading:
             //   `var Rytm = require('path/to/rytm');`
-            this.exports = Rytm;
+            module.exports = Rytm;
         }
         else{
             // * `Rytm` will be a global variable if its factory was ran 
@@ -62,7 +62,7 @@
 
         // * You can also create new instance the 'creator' style:
         //   `var r = Rytm()`
-        if (this instanceof Rytm){
+        if (!(this instanceof Rytm)){
             return new (Rytm.bind.apply(Rytm, null, arguments))();
         }
     
@@ -79,7 +79,7 @@
 
         // * Constructor will automatically load callbacks which passed in constructor as 
         //   tasks
-        loadSteps(arguments);
+        loadSteps.call(this, arguments);
         
     };
     
@@ -96,7 +96,7 @@
                 continue;
             }
 
-            this.step(cur);
+            this.beat(cur);
         }
     }
 
@@ -140,7 +140,7 @@
     //
 	p.beat = function(callback){
         if (arguments.length > 1){
-            loadSteps(arguments);
+            loadSteps.call(this, arguments);
         }
         else{
     		var stepStruct = this._createNode(callback);
@@ -164,7 +164,7 @@
     // 
     // An alias of `beat` for backward compatibility.
     //
-    p.step = beat;
+    p.step = p.beat;
 
     // ## wait
     //
