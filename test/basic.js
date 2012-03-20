@@ -35,7 +35,7 @@ describe('Rytm', function(){
         expect(secondCalled).equal(true)
     });
 
-    describe('beat', function(){
+    describe('.beat', function(){
         it('should be able to queue a function', function(){
             var r = new Rytm();
             var ret = r.beat(function(){

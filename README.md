@@ -88,3 +88,16 @@ safer, simpler, and productivity, and the code become more readable and compact:
 
      })
      .go();
+
+# How to use
+
+# Build
+
+# Run test
+
+To run tests in node.js, you will need to install mocha and chai first:
+`npm install chai mocha -g`
+
+And then simply hit:
+`make test`
+
