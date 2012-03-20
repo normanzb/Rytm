@@ -15,7 +15,6 @@
         // * Nodejs module loading:
         //   `var Rytm = require('path/to/rytm');`
         module.exports = Rytm;
-        console.log(module.exports)
     }
     else{
         // * `Rytm` will be a global variable if its factory was ran 
@@ -65,7 +64,7 @@
         }
     
         this.steps = [this._createNode(function(){
-            this.next();
+            this._go();
         })];
         this.cursor = this.steps[0];
         
