@@ -6,23 +6,21 @@
 ;(function(name, factory){
     var Rytm = factory(this);
 
-    if (this.require){
-
-        if (this.require.amd && this.define){
-            // * AMD loader such as requirejs or curl: 
-            // `require('path/to/rytm', callback);`
-            this.define(Rytm);
-        }
-        else if (typeof exports != 'undefined'　&& typeof module != 'undefined'){
-            // * Nodejs module loading:
-            //   `var Rytm = require('path/to/rytm');`
-            module.exports = Rytm;
-        }
-        else{
-            // * `Rytm` will be a global variable if its factory was ran 
-            //   without AMD loader
-            this[name] = factory;
-        }
+    if (this.require && this.require.amd && this.define){
+        // * AMD loader such as requirejs or curl: 
+        // `require('path/to/rytm', callback);`
+        this.define(Rytm);
+    }
+    else if (typeof exports != 'undefined'　&& typeof module != 'undefined'){
+        // * Nodejs module loading:
+        //   `var Rytm = require('path/to/rytm');`
+        module.exports = Rytm;
+        console.log(module.exports)
+    }
+    else{
+        // * `Rytm` will be a global variable if its factory was ran 
+        //   without AMD loader
+        this[name] = Rytm;
     }
 
 })
