@@ -38,6 +38,30 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
             "slug": "the-reasons-for-rytm"
           },
           "depth": 1
+        }, {
+          "type": "heading",
+          "data": {
+            "level": 1,
+            "title": "How to use",
+            "slug": "how-to-use"
+          },
+          "depth": 1
+        }, {
+          "type": "heading",
+          "data": {
+            "level": 1,
+            "title": "Build",
+            "slug": "build"
+          },
+          "depth": 1
+        }, {
+          "type": "heading",
+          "data": {
+            "level": 1,
+            "title": "Run test",
+            "slug": "run-test"
+          },
+          "depth": 1
         }
       ]
     }, {
@@ -56,8 +80,8 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
           "type": "heading",
           "data": {
             "level": 1,
-            "title": "Internal and External APIs",
-            "slug": "internal-and-external-apis",
+            "title": "APIs and Annotation",
+            "slug": "apis-and-annotation",
             "isFileHeader": true
           },
           "depth": 1,
@@ -329,7 +353,7 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
             }
           ]
         },
-        "title": "Internal and External APIs"
+        "title": "APIs and Annotation"
       },
       "depth": 1,
       "outline": [
