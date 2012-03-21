@@ -1,4 +1,4 @@
-// # Internal and External APIs
+// # APIs and Annotation
 
 // ## Multiple environment support
 // Rytm supports multiply JavaScript environment including:
@@ -267,7 +267,7 @@
         }
         var scope = this, args = arguments
 		setTimeout(function(){
-            this.go.apply(scope, args);
+            scope.go.apply(scope, args);
         }, millisecond);
 		return this;
 	};
