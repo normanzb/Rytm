@@ -96,7 +96,7 @@ safer, simpler, and productivity, and the code become more readable and compact:
 # Run test
 
 To run tests in node.js, you will need to install mocha and chai first:
-`npm install chai mocha -g`
+`npm install chai chai-spies mocha`
 
 And then simply hit:
 `make test`

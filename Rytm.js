@@ -68,7 +68,7 @@
         })];
         this.cursor = this.steps[0];
         
-        // * Wrap `go()`, make sure the context of `go()` is always current
+        // * Creates `go()`, which wraps `_go()`, make sure the context of `go()` is always current
         //   instance
         this.go = this._go.bind(this);
         this.defer = this.defer.bind(this);
@@ -444,6 +444,9 @@
 // To hold the parameters to next beat
 //
 // ### tests
+
+// ### dispose
+// Release and destroy current instance (useful when trying to ignore any futher step )
 	
 	return Rytm;
 });

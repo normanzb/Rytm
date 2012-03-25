@@ -1,14 +1,20 @@
-var chai, should, Rytm;
+var chai, spies, should, Rytm, assert, expect;
 
 if (require){
     chai = require('chai');
+    spies = require('chai-spies');
+
     Rytm = require('../Rytm');
 }
 else{
     chai = this.chai;
+    spies = chai_spies;
 }
 
+chai.use(spies);
+
 expect = chai.expect;
+assert = chai.assert;
 
 var testHelpers = {
     testMultipleTask: function(paramPasser){
@@ -42,7 +48,7 @@ var testHelpers = {
             }
         }
 
-        expect(allExecuted).equal(true);
+        expect(allExecuted).is.true;
     }
 };
 
@@ -55,6 +61,7 @@ describe('Rytm', function(){
     it('should be instantiatable', function(){
         var r = new Rytm();
         expect(r).is.a('object');
+        expect(r).is.an.instanceof(Rytm);
     });
 
     it('accepts tasks as constructor parameters', function(){
@@ -83,8 +90,8 @@ describe('Rytm', function(){
                 r.go();
 
                 // also imply that the tasks are execute synchronously.
-                expect(taskIsExecuted).equal(true);
-                expect(secondTaskExecuted).equal(false);
+                expect(taskIsExecuted).is.true;
+                expect(secondTaskExecuted).is.false;
             }
         );
     });
@@ -109,7 +116,7 @@ describe('Rytm', function(){
 
             r.go();
 
-            expect(taskIsExecuted).equal(true);
+            expect(taskIsExecuted).is.true;
         });
 
         it('should be able to queue multiple tasks', function(){
@@ -145,9 +152,9 @@ describe('Rytm', function(){
             })
             .go();
 
-            expect(isSync).equal(true);
+            expect(isSync).is.true;
             setTimeout(function(){
-                expect(isSync).equal(false);
+                expect(isSync).is.false;
                 done();
             }, 0);
         });
@@ -158,37 +165,114 @@ describe('Rytm', function(){
             r
             .beat(function(){
                 deferExecuted = false;
+
+                setTimeout(function(){
+                    expect(deferExecuted).is.false;
+                }, 500);
+
                 this.defer(500);
+
+                setTimeout(function(){
+                    expect(deferExecuted).is.true;
+                    done();
+                }, 500);
             })
             .beat(function(){
                 deferExecuted = true;
             })
             .defer(0);
 
-            expect(deferExecuted).equal(true);
+            expect(deferExecuted).is.true;
             setTimeout(function(){
-                expect(deferExecuted).equal(false);
+                expect(deferExecuted).is.false;
             }, 0);
-            setTimeout(function(){
-                expect(deferExecuted).equal(false);
-                done();
-            }, 400);
-            setTimeout(function(){
-                expect(deferExecuted).equal(true);
-                done();
-            }, 500);
         })
     });
 
     describe('.once', function(){
-        it('should execute the coming task once one of its produced callback gets called.', function(){
-            var c1, c2, c3;
-            var r = new Rytm(function(){
 
-            }, function(){
+        it('should execute the coming task immediately if its only "produced" callback gets called', 
+            function(done){
+                var spy = chai.spy();
+                (new Rytm(function(){
+                    var callback = this.once();
 
-            })
-        });
+                    callback();
+
+                    // repeat again to see if any error
+                    callback = this.once();
+
+                    callback();
+
+                    setTimeout(function(){
+
+                        expect(spy).have.been.called.once;
+
+                        done();
+
+                    }, 0);
+
+                }, spy)).go();
+
+                // if it is true means the 2nd task is execute sychronously
+                expect(spy).have.been.called.once;
+            }
+        );
+
+        it('should execute the coming task when one of its produced callback gets called.', 
+            function(done){
+                var spy = chai.spy(), asyncCallCounter = 0;
+                (new Rytm(function(){
+                    for(var l = 99; l--; ){
+                        setTimeout((function(){
+                            
+                            asyncCallCounter++
+
+                            this();
+
+                            if (asyncCallCounter > 0){
+                                expect(spy).have.been.called.once;
+                            }
+
+                            if (asyncCallCounter >= 99){
+                                done();
+                            }
+                            
+                        }).bind(this.once()), l);
+                    }
+                }, spy)).go();
+            }
+        );
+    });
+
+    describe('.all', function(){
+        it('should execute the coming task when all of its produced callbacks get called.', 
+            function(done){
+                var spy = chai.spy(), asyncCallCounter = 0;
+                (new Rytm(function(){
+                    for(var l = 99; l--; ){
+                        setTimeout((function(){
+                            
+                            asyncCallCounter++
+
+                            this();
+
+                            if (asyncCallCounter >= 99){
+
+                                expect(spy).have.been.called.once;
+
+                                done();
+                            }
+                            else if (asyncCallCounter > 0){
+                                expect(spy).have.been.not_called;
+                            }
+                            
+                            
+                        }).bind(this.all()), l);
+                    }
+                }, spy)).go();
+            }
+        );
     });
 
 });
