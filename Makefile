@@ -1,6 +1,6 @@
 doc:
 	groc "*.js" "README.md" --github false
-	groc "*.js" "README.md" 
+	groc "*.js" "README.md" \
 		--github true
 
 .PHONY: doc

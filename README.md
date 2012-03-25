@@ -93,6 +93,14 @@ safer, simpler, and productivity, and the code become more readable and compact:
 
 # Build
 
+# Build Doc
+
+1. Install groc
+`npm install groc`
+
+2. Run make
+`make doc`
+
 # Run test
 
 To run tests in node.js, you will need to install mocha and chai first:
