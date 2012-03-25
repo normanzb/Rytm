@@ -5,7 +5,7 @@ doc:
 
 test:
 	mocha \
-		--reporter dot \
+		--reporter landing \
 		--ui bdd \
 		--require chai \
 		--require ./Rytm \
