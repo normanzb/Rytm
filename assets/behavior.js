@@ -80,8 +80,8 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
           "type": "heading",
           "data": {
             "level": 1,
-            "title": "Internal and External APIs",
-            "slug": "internal-and-external-apis",
+            "title": "APIs and Annotation",
+            "slug": "apis-and-annotation",
             "isFileHeader": true
           },
           "depth": 1,
@@ -348,12 +348,20 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
                     "slug": "tests"
                   },
                   "depth": 3
+                }, {
+                  "type": "heading",
+                  "data": {
+                    "level": 3,
+                    "title": "dispose",
+                    "slug": "dispose"
+                  },
+                  "depth": 3
                 }
               ]
             }
           ]
         },
-        "title": "Internal and External APIs"
+        "title": "APIs and Annotation"
       },
       "depth": 1,
       "outline": [
@@ -617,6 +625,14 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
                 "level": 3,
                 "title": "tests",
                 "slug": "tests"
+              },
+              "depth": 3
+            }, {
+              "type": "heading",
+              "data": {
+                "level": 3,
+                "title": "dispose",
+                "slug": "dispose"
               },
               "depth": 3
             }
