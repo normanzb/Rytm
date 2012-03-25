@@ -61,8 +61,9 @@ without AMD loader</li>
             <span class="k">return</span> <span class="k">new</span> <span class="p">(</span><span class="nx">Rytm</span><span class="p">.</span><span class="nx">bind</span><span class="p">.</span><span class="nx">apply</span><span class="p">(</span><span class="nx">Rytm</span><span class="p">,</span> <span class="kc">null</span><span class="p">,</span> <span class="nx">arguments</span><span class="p">))();</span>
         <span class="p">}</span>
     
-        <span class="k">this</span><span class="p">.</span><span class="nx">steps</span> <span class="o">=</span> <span class="p">[</span><span class="k">this</span><span class="p">.</span><span class="nx">_createNode</span><span class="p">(</span><span class="kd">function</span><span class="p">(){</span>
-            <span class="k">this</span><span class="p">.</span><span class="nx">_go</span><span class="p">();</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">steps</span> <span class="o">=</span> <span class="p">[</span><span class="k">this</span><span class="p">.</span><span class="nx">_createNode</span><span class="p">(</span><span class="kd">function</span><span class="p">(){</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><ul>
+<li>The "head node" simply redirect the calls to next step</li>
+</ul></div></div><div class="code"><div class="wrapper">            <span class="k">this</span><span class="p">.</span><span class="nx">_go</span><span class="p">.</span><span class="nx">apply</span><span class="p">(</span><span class="k">this</span><span class="p">,</span> <span class="nx">arguments</span><span class="p">);</span>
         <span class="p">})];</span>
         <span class="k">this</span><span class="p">.</span><span class="nx">cursor</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">steps</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
         </div></div></div><div class="segment"><div class="comments"><div class="wrapper"><ul>
@@ -164,8 +165,9 @@ a specified millisecond, and pass the arguments to next task.</p>
     <span class="kd">var</span> <span class="nx">s</span> <span class="o">=</span> <span class="k">this</span><span class="p">;</span>
 
     <span class="nx">s</span><span class="p">.</span><span class="nx">step</span><span class="p">(</span><span class="kd">function</span><span class="p">(){</span>
-            <span class="kd">var</span> <span class="nx">scope</span> <span class="o">=</span> <span class="k">this</span><span class="p">,</span> <span class="nx">args</span> <span class="o">=</span> <span class="nx">arguments</span><span class="p">;</span>
-      <span class="nx">s</span><span class="p">.</span><span class="nx">defer</span><span class="p">(</span><span class="nx">timeout</span><span class="p">);</span>
+            <span class="kd">var</span> <span class="nx">args</span> <span class="o">=</span> <span class="nx">arguments</span><span class="p">;</span>
+
+      <span class="nx">s</span><span class="p">.</span><span class="nx">defer</span><span class="p">(</span><span class="nx">timeout</span><span class="p">,</span> <span class="nx">args</span><span class="p">);</span>
     <span class="p">});</span>
     
     <span class="k">return</span> <span class="k">this</span><span class="p">;</span>
@@ -238,16 +240,38 @@ p.s. return false will also cause immediate execution of next
 <p>Execute the next task in the sequence, but delay a bit, same as 
 appending a wait(0) between current task and next task.
 this is useful when you want to leave the working idle so runtime
-can pick some more important task to process.</p></div></div><div class="code"><div class="wrapper">  <span class="nx">p</span><span class="p">.</span><span class="nx">defer</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">millisecond</span><span class="p">){</span>
-        <span class="k">if</span> <span class="p">(</span><span class="nx">arguments</span><span class="p">.</span><span class="nx">length</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="o">||</span> 
-            <span class="nx">millisecond</span> <span class="o">==</span> <span class="kc">undefined</span> <span class="o">||</span> 
+can pick some more important task to process.</p>
+
+<h3 id="parameters">Parameters</h3>
+
+<ul>
+<li>millisecond - Specify the millisecond to wait, default to 0;</li>
+<li>args - The arguments to pass to next task</li>
+</ul>
+
+<h3 id="tips-and-annotations">Tips and Annotations</h3></div></div><div class="code"><div class="wrapper">  <span class="nx">p</span><span class="p">.</span><span class="nx">defer</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">millisecond</span><span class="p">,</span> <span class="nx">args</span><span class="p">){</span>
+
+        <span class="kd">var</span> <span class="nx">ms</span><span class="p">;</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><ul>
+<li>If millisecond is not given, the delay millisecond will be set to 0</li>
+</ul></div></div><div class="code"><div class="wrapper">        <span class="k">if</span> <span class="p">(</span><span class="nx">arguments</span><span class="p">.</span><span class="nx">length</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="o">||</span> 
+            <span class="nx">millisecond</span> <span class="o">==</span> <span class="kc">null</span> <span class="o">||</span> 
             <span class="nx">global</span><span class="p">.</span><span class="nb">isNaN</span><span class="p">(</span><span class="nx">millisecond</span><span class="p">)){</span>
-            <span class="nx">millisecond</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
+            <span class="nx">ms</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span>
         <span class="p">}</span>
-        <span class="kd">var</span> <span class="nx">scope</span> <span class="o">=</span> <span class="k">this</span><span class="p">,</span> <span class="nx">args</span> <span class="o">=</span> <span class="nx">arguments</span>
+        <span class="k">else</span><span class="p">{</span>
+            <span class="nx">ms</span> <span class="o">=</span> <span class="nx">millisecond</span><span class="p">;</span>
+        <span class="p">}</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><ul>
+<li>The millisecond is optional, if the first argument is not a number, it will be 
+considered as arguments to the callback of next task</li>
+</ul></div></div><div class="code"><div class="wrapper">        <span class="k">if</span> <span class="p">(</span><span class="nx">args</span> <span class="o">==</span> <span class="kc">null</span> <span class="o">&amp;&amp;</span> <span class="nx">global</span><span class="p">.</span><span class="nb">isNaN</span><span class="p">(</span><span class="nx">millisecond</span><span class="p">)){</span>
+            <span class="nx">args</span> <span class="o">=</span> <span class="nx">millisecond</span><span class="p">;</span>
+        <span class="p">}</span>
+
+        <span class="kd">var</span> <span class="nx">scope</span> <span class="o">=</span> <span class="k">this</span><span class="p">;</span>
     <span class="nx">setTimeout</span><span class="p">(</span><span class="kd">function</span><span class="p">(){</span>
             <span class="nx">scope</span><span class="p">.</span><span class="nx">go</span><span class="p">.</span><span class="nx">apply</span><span class="p">(</span><span class="nx">scope</span><span class="p">,</span> <span class="nx">args</span><span class="p">);</span>
-        <span class="p">},</span> <span class="nx">millisecond</span><span class="p">);</span>
+        <span class="p">},</span> <span class="nx">ms</span><span class="p">);</span>
+
     <span class="k">return</span> <span class="k">this</span><span class="p">;</span>
   <span class="p">};</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h2 id="once">once</h2>
 
