@@ -49,6 +49,21 @@ var testHelpers = {
         }
 
         expect(allExecuted).is.true;
+    },
+    compareArgs: function(args1, args2){
+
+        for(var l = args1.length; l--;){
+
+            if (!(l in args1 && l in args2)){
+                return false;
+            }
+
+            if (args1[l] !== args2[l]){
+                return false;
+            }
+        }
+
+        return true;
     }
 };
 
@@ -94,6 +109,26 @@ describe('Rytm', function(){
                 expect(secondTaskExecuted).is.false;
             }
         );
+
+        it('should be able to pass arguments to next task',
+            function(){
+                var taskIsExecuted = false, secondTaskExecuted = false;
+                var r = new Rytm();
+                r
+                .beat(function(){
+                    taskIsExecuted = true;
+                })
+                .beat(function(){
+                    secondTaskExecuted = true;
+                });
+
+                r.go();
+
+                // also imply that the tasks are execute synchronously.
+                expect(taskIsExecuted).is.true;
+                expect(secondTaskExecuted).is.false;
+            }
+        );
     });
 
     describe('.beat', function(){
@@ -120,10 +155,25 @@ describe('Rytm', function(){
         });
 
         it('should be able to queue multiple tasks', function(){
+            var foobar = {}, 
+                args0 = [0, foobar, true, false, undefined], 
+                args1 = [1, foobar, true, false, undefined];
+                
             var r = new Rytm();
-            var paramPasser = r.beat.apply.bind(r.beat, r);
+            r
+            .beat(function(){
 
-            testHelpers.testMultipleTask(paramPasser);
+                expect(arguments).to.satisfy(testHelpers.compareArgs.bind(null, args0));
+
+                this.go.apply(this, args1);
+
+            }, function(){
+
+                expect(arguments).eql(args1);
+
+            })
+            // test if the first arg is 0
+            .go.apply(r, args0);
         });
     });
 
@@ -186,7 +236,39 @@ describe('Rytm', function(){
             setTimeout(function(){
                 expect(deferExecuted).is.false;
             }, 0);
-        })
+        });
+
+        it('should be able to pass the arguments to the callback of next task ', function(done){
+            var foobar = {}, 
+                args0 = [0, foobar, true, false, undefined], 
+                args1 = [1, foobar, true, false, undefined],
+                args2 = [2, foobar, true, false, undefined];
+            var r = new Rytm();
+            r
+            .beat(function(){
+
+                expect(arguments).to.satisfy(testHelpers.compareArgs.bind(null, args0));
+
+                this.defer(500, args1);
+
+            }, function(){
+
+                expect(arguments).eql(args1);
+
+                // omit the first arg
+                this.defer(args2);
+
+            })
+            .beat(function(){
+
+                expect(arguments).eql(args2);
+
+                done();
+
+            })
+            // test if the first arg is 0
+            .defer(0, args0);
+        });
     });
 
     describe('.once', function(){
@@ -195,16 +277,22 @@ describe('Rytm', function(){
             function(done){
                 var spy = chai.spy();
                 (new Rytm(function(){
-                    var callback = this.once();
-
-                    callback();
-
-                    // repeat again to see if any error
-                    callback = this.once();
+                    var callback = this.once(), scope = this;
 
                     callback();
 
                     setTimeout(function(){
+
+                        expect(spy).have.been.called.once;
+
+                    }, 0);
+
+
+                    setTimeout(function(){
+                        // repeat again to see if any error
+                        callback = scope.once();
+
+                        callback();
 
                         expect(spy).have.been.called.once;
 
