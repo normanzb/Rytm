@@ -422,15 +422,15 @@
     // ### Tips and Annotation
     p.next = function(){
         var cur = this.cursor,
-            go = this.go;
+            go = this.go, result;
         
-        if (cur.next && cur.next.callback){
+        if (cur && cur.callback){
             // * Private member _inNextCallContext indicates how many level of nested next() is called
             //   correspondingly, later call to `go()` will have to skip _inNextCallContext
             //   tasks.
             this._inNextCallContext++;
 
-            var result = this.cur.next.callback.call(this);
+            result = cur.callback.apply(this, arguments);
 
             // * `next` makes sure the behavior is the same as `go` when the task has return value.
             //   Return anything other than undefine will cause advancing to next task immediately
@@ -441,7 +441,7 @@
             this._inNextCallContext--;
         }
 
-        return null;
+        return result;
 
     };
 

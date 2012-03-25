@@ -385,4 +385,23 @@ describe('Rytm', function(){
         );
     });
 
+    // TODO: describe wait()
+
+    describe('.next', function(){
+        it('should be a reference next task.', 
+            function(done){
+                var spy = chai.spy();
+
+                (new Rytm(function(){
+                    this.next();
+
+                    expect(spy).have.been.called;
+
+                    done();
+
+                }, spy)).go();
+            }
+        );
+    });
+
 });
