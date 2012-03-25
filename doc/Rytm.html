@@ -66,7 +66,7 @@ without AMD loader</li>
         <span class="p">})];</span>
         <span class="k">this</span><span class="p">.</span><span class="nx">cursor</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">steps</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
         </div></div></div><div class="segment"><div class="comments"><div class="wrapper"><ul>
-<li>Wrap <code>go()</code>, make sure the context of <code>go()</code> is always current
+<li>Creates <code>go()</code>, which wraps <code>_go()</code>, make sure the context of <code>go()</code> is always current
 instance</li>
 </ul></div></div><div class="code"><div class="wrapper">        <span class="k">this</span><span class="p">.</span><span class="nx">go</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">_go</span><span class="p">.</span><span class="nx">bind</span><span class="p">(</span><span class="k">this</span><span class="p">);</span>
         <span class="k">this</span><span class="p">.</span><span class="nx">defer</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">defer</span><span class="p">.</span><span class="nx">bind</span><span class="p">(</span><span class="k">this</span><span class="p">);</span>
@@ -246,7 +246,7 @@ can pick some more important task to process.</p></div></div><div class="code"><
         <span class="p">}</span>
         <span class="kd">var</span> <span class="nx">scope</span> <span class="o">=</span> <span class="k">this</span><span class="p">,</span> <span class="nx">args</span> <span class="o">=</span> <span class="nx">arguments</span>
     <span class="nx">setTimeout</span><span class="p">(</span><span class="kd">function</span><span class="p">(){</span>
-            <span class="k">this</span><span class="p">.</span><span class="nx">go</span><span class="p">.</span><span class="nx">apply</span><span class="p">(</span><span class="nx">scope</span><span class="p">,</span> <span class="nx">args</span><span class="p">);</span>
+            <span class="nx">scope</span><span class="p">.</span><span class="nx">go</span><span class="p">.</span><span class="nx">apply</span><span class="p">(</span><span class="nx">scope</span><span class="p">,</span> <span class="nx">args</span><span class="p">);</span>
         <span class="p">},</span> <span class="nx">millisecond</span><span class="p">);</span>
     <span class="k">return</span> <span class="k">this</span><span class="p">;</span>
   <span class="p">};</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h2 id="once">once</h2>
@@ -402,6 +402,8 @@ Return anything other than undefine will cause advancing to next task immediatel
 
 <p>To hold the parameters to next beat</p>
 
-<h3 id="tests">tests</h3></div></div><div class="code"><div class="wrapper">  
+<h3 id="tests">tests</h3></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h3 id="dispose">dispose</h3>
+
+<p>Release and destroy current instance (useful when trying to ignore any futher step )</p></div></div><div class="code"><div class="wrapper">  
   <span class="k">return</span> <span class="nx">Rytm</span><span class="p">;</span>
 <span class="p">});</span></div></div></div></div></body></html>
