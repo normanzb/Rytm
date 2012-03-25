@@ -58,6 +58,14 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
           "type": "heading",
           "data": {
             "level": 1,
+            "title": "Build Doc",
+            "slug": "build-doc"
+          },
+          "depth": 1
+        }, {
+          "type": "heading",
+          "data": {
+            "level": 1,
             "title": "Run test",
             "slug": "run-test"
           },
