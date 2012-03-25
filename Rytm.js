@@ -309,7 +309,7 @@
 				return;
 			}
 
-			go();
+			go.apply(scope, arguments);
 		};
 	};
 

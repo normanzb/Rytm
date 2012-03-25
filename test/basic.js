@@ -158,7 +158,7 @@ describe('Rytm', function(){
             var foobar = {}, 
                 args0 = [0, foobar, true, false, undefined], 
                 args1 = [1, foobar, true, false, undefined];
-                
+
             var r = new Rytm();
             r
             .beat(function(){
@@ -331,6 +331,28 @@ describe('Rytm', function(){
                 }, spy)).go();
             }
         );
+
+        it('should be able to pass arguments to next task', function(){
+            var foobar = {hello: true}, args = [1, true, foobar];
+            var r = new Rytm(function(){
+                var c1 = this.once(),
+                    c2 = this.once(),
+                    c3;
+
+                    c1.apply(null, args);
+
+                    c2(2, true, foobar);
+
+                    c3 = this.once();
+
+                    c3(3, true, foobar);
+
+            }, function(){
+
+                expect(arguments).to.satisfy(testHelpers.compareArgs.bind(null, args));
+
+            }).go();
+        });
     });
 
     describe('.all', function(){
