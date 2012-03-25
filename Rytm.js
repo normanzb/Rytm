@@ -64,7 +64,8 @@
         }
     
         this.steps = [this._createNode(function(){
-            this._go();
+            // * The "head node" simply redirect the calls to next step
+            this._go.apply(this, arguments);
         })];
         this.cursor = this.steps[0];
         
@@ -173,8 +174,9 @@
 		var s = this;
 
 		s.step(function(){
-            var scope = this, args = arguments;
-			s.defer(timeout);
+            var args = arguments;
+
+			s.defer(timeout, args);
 		});
 		
 		return this;
@@ -258,17 +260,37 @@
     // appending a wait(0) between current task and next task.
     // this is useful when you want to leave the working idle so runtime
     // can pick some more important task to process.
+    //
+    // ### Parameters
+    // * millisecond - Specify the millisecond to wait, default to 0;
+    // * args - The arguments to pass to next task
+    // ### Tips and Annotations
 
-	p.defer = function(millisecond){
+	p.defer = function(millisecond, args){
+
+        var ms;
+
+        // * If millisecond is not given, the delay millisecond will be set to 0
         if (arguments.length < 0 || 
-            millisecond == undefined || 
+            millisecond == null || 
             global.isNaN(millisecond)){
-            millisecond = 0;
+            ms = 0;
         }
-        var scope = this, args = arguments
+        else{
+            ms = millisecond;
+        }
+
+        // * The millisecond is optional, if the first argument is not a number, it will be 
+        //   considered as arguments to the callback of next task
+        if (args == null && global.isNaN(millisecond)){
+            args = millisecond;
+        }
+
+        var scope = this;
 		setTimeout(function(){
             scope.go.apply(scope, args);
-        }, millisecond);
+        }, ms);
+
 		return this;
 	};
 
