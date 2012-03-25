@@ -95,17 +95,14 @@ safer, simpler, and productivity, and the code become more readable and compact:
 
 # Build Doc
 
-1. Install groc
-`npm install groc`
+1. Install groc: `npm install groc`
 
-2. Run make
-`make doc`
+2. Run make: `make doc`
 
 # Run test
 
-To run tests in node.js, you will need to install mocha and chai first:
+1. To run tests in node.js, you will need to install mocha and chai first: 
 `npm install chai chai-spies mocha`
 
-And then simply hit:
-`make test`
+2. And then simply hit: `make test`
 
