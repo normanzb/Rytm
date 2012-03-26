@@ -395,11 +395,78 @@ describe('Rytm', function(){
                 (new Rytm(function(){
                     this.next();
 
-                    expect(spy).have.been.called;
+                    expect(spy).have.been.called.once;
 
                     done();
 
                 }, spy)).go();
+            }
+        );
+
+        it('should not advance the cursor when called.', 
+            function(done){
+                var spy = chai.spy(), spy2 = chai.spy();
+
+                (new Rytm(function(){
+
+                    this.next();
+
+                    expect(spy).have.been.called.once;
+
+                    this.next();
+
+                    expect(spy).have.been.called.twice;
+
+                    expect(spy2).have.been.not_called;
+
+                    done();
+
+
+                }, function(){
+
+                    spy();
+
+                }, function(){
+
+                    spy2();
+
+                })).go();
+            }
+        );
+
+        it('should advance the cursor to point to ' +
+            'the next task of next task when go() is called in next task', 
+            function(done){
+                var spy = chai.spy(), spy2 = chai.spy();
+
+                (new Rytm(function(){
+
+                    this.next();
+
+                    expect(spy).have.been.called.once;
+
+                    this.next();
+
+                    expect(spy).have.been.called.twice;
+
+                    expect(spy2).have.been.called.once;
+
+                    done();
+
+
+                }, function(){
+
+                    spy();
+
+                    if (spy.__spy.calls.length > 1){
+                        this.go();
+                    }
+
+                }, function(){
+
+                    spy2();
+
+                })).go();
             }
         );
     });

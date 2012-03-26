@@ -105,24 +105,43 @@ it creates a node which can be used in the task sequence.</p>
 <h3 id="schema">Schema</h3>
 
 <pre><code> {
-     // the actual 'task function' in current task
+     // callback - the actual 'task function' in current task
      callback: actuallTaskFunc,
-     // the reference to next node in sequence
+     // next - the reference to next node in sequence
      next: nextNode,
-     // An array that stores callback which returned 
+     // prev - the reference to prev node
+     prev: prevNode
+     // lastCalls - An array that stores callback which returned 
      // by `all()`
      lastCalls: [],
-     // ticked = true means execution of current task is done
+     // ticked - true means execution of current task is done
      // and it is safe to advance to next task
      ticked: false
+     // went - true to means the cursor advancing is already done
+     // and do not do it again.
  }
 </code></pre></div></div><div class="code"><div class="wrapper">  <span class="nx">p</span><span class="p">.</span><span class="nx">_createNode</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">callback</span><span class="p">,</span> <span class="nx">next</span><span class="p">){</span>
     <span class="k">if</span> <span class="p">(</span><span class="nx">next</span> <span class="o">===</span> <span class="nx">undef</span><span class="p">){</span>
       <span class="nx">next</span> <span class="o">=</span> <span class="kc">null</span><span class="p">;</span>
     <span class="p">}</span>
-    <span class="kd">var</span> <span class="nx">ret</span> <span class="o">=</span> <span class="p">{</span><span class="nx">callback</span><span class="o">:</span> <span class="nx">callback</span><span class="p">,</span> <span class="nx">next</span><span class="o">:</span> <span class="nx">next</span><span class="p">,</span> <span class="nx">nextWrapper</span><span class="o">:</span> <span class="kc">null</span><span class="p">};</span>
+    <span class="kd">var</span> <span class="nx">ret</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="nx">callback</span><span class="o">:</span> <span class="nx">callback</span><span class="p">,</span> 
+            <span class="nx">next</span><span class="o">:</span> <span class="nx">next</span><span class="p">,</span> 
+            <span class="nx">prev</span><span class="o">:</span> <span class="kc">null</span><span class="p">,</span>
+            <span class="nx">lastCalls</span><span class="o">:</span> <span class="p">[],</span>
+            <span class="nx">ticked</span><span class="o">:</span> <span class="kc">false</span><span class="p">,</span> 
+            <span class="nx">went</span><span class="o">:</span> <span class="kc">false</span>
+        <span class="p">};</span>
     <span class="k">return</span> <span class="nx">ret</span><span class="p">;</span>
-  <span class="p">};</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h2 id="beat">beat</h2>
+  <span class="p">};</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h2 id="current">current</h2>
+
+<p>Get current task node</p></div></div><div class="code"><div class="wrapper">    <span class="nx">p</span><span class="p">.</span><span class="nx">current</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(){</span>
+        <span class="k">if</span> <span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">cursor</span><span class="p">){</span>
+            <span class="k">return</span> <span class="k">this</span><span class="p">.</span><span class="nx">cursor</span><span class="p">.</span><span class="nx">prev</span><span class="p">;</span>
+        <span class="p">}</span>
+
+        <span class="k">return</span> <span class="k">this</span><span class="p">.</span><span class="nx">steps</span><span class="p">[</span><span class="k">this</span><span class="p">.</span><span class="nx">steps</span><span class="p">.</span><span class="nx">length</span> <span class="o">-</span> <span class="mi">1</span><span class="p">];</span>
+    <span class="p">};</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h2 id="beat">beat</h2>
 
 <p>Add a callback to the execution sequence</p>
 
@@ -137,8 +156,11 @@ it creates a node which can be used in the task sequence.</p>
             <span class="nx">loadSteps</span><span class="p">.</span><span class="nx">call</span><span class="p">(</span><span class="k">this</span><span class="p">,</span> <span class="nx">arguments</span><span class="p">);</span>
         <span class="p">}</span>
         <span class="k">else</span><span class="p">{</span>
-        <span class="kd">var</span> <span class="nx">stepStruct</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">_createNode</span><span class="p">(</span><span class="nx">callback</span><span class="p">);</span>
-        <span class="k">this</span><span class="p">.</span><span class="nx">steps</span><span class="p">[</span><span class="k">this</span><span class="p">.</span><span class="nx">steps</span><span class="p">.</span><span class="nx">length</span> <span class="o">-</span> <span class="mi">1</span><span class="p">].</span><span class="nx">next</span> <span class="o">=</span> <span class="nx">stepStruct</span><span class="p">;</span>
+        <span class="kd">var</span> <span class="nx">stepStruct</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">_createNode</span><span class="p">(</span><span class="nx">callback</span><span class="p">),</span>
+                <span class="nx">lastStep</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">steps</span><span class="p">[</span><span class="k">this</span><span class="p">.</span><span class="nx">steps</span><span class="p">.</span><span class="nx">length</span> <span class="o">-</span> <span class="mi">1</span><span class="p">];</span>
+
+            <span class="nx">stepStruct</span><span class="p">.</span><span class="nx">prev</span> <span class="o">=</span> <span class="nx">lastStep</span><span class="p">;</span>
+        <span class="nx">lastStep</span><span class="p">.</span><span class="nx">next</span> <span class="o">=</span> <span class="nx">stepStruct</span><span class="p">;</span>
         <span class="k">this</span><span class="p">.</span><span class="nx">steps</span><span class="p">.</span><span class="nx">push</span><span class="p">(</span><span class="nx">stepStruct</span><span class="p">);</span>
         </div></div></div><div class="segment"><div class="comments"><div class="wrapper"><ul>
 <li>Once current Rytm instance executed
@@ -215,13 +237,15 @@ be called. </li>
       <span class="k">return</span> <span class="k">this</span><span class="p">;</span>
     <span class="p">}</span>
     
-    <span class="nx">callback</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">cursor</span><span class="p">.</span><span class="nx">callback</span><span class="p">;</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><ul>
-<li><code>_go()</code> will internally setup/normalize the parameters </li>
-</ul></div></div><div class="code"><div class="wrapper">    <span class="k">this</span><span class="p">.</span><span class="nx">cursor</span><span class="p">.</span><span class="nx">lastCalls</span> <span class="o">=</span> <span class="p">[];</span>
-    
+    <span class="nx">callback</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">cursor</span><span class="p">.</span><span class="nx">callback</span><span class="p">;</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>TODO: tick cursor here</p></div></div><div class="code"><div class="wrapper">    
     <span class="k">if</span> <span class="p">(</span><span class="nx">callback</span> <span class="o">==</span> <span class="kc">null</span><span class="p">){</span>
       <span class="k">return</span> <span class="k">this</span><span class="p">;</span>
     <span class="p">}</span>
+
+        <span class="kd">var</span> <span class="nx">current</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">current</span><span class="p">();</span>
+        <span class="k">if</span> <span class="p">(</span><span class="nx">current</span><span class="p">){</span>
+            <span class="nx">current</span><span class="p">.</span><span class="nx">went</span> <span class="o">=</span> <span class="kc">true</span><span class="p">;</span>
+        <span class="p">}</span>
     </div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>and then advance to next</p></div></div><div class="code"><div class="wrapper">    <span class="k">this</span><span class="p">.</span><span class="nx">cursor</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">cursor</span><span class="p">.</span><span class="nx">next</span><span class="p">;</span>
 
     <span class="kd">var</span> <span class="nx">result</span> <span class="o">=</span> <span class="nx">callback</span><span class="p">.</span><span class="nx">apply</span><span class="p">(</span><span class="k">this</span><span class="p">,</span> <span class="nx">arguments</span><span class="p">);</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><ul>
@@ -276,17 +300,26 @@ considered as arguments to the callback of next task</li>
   <span class="p">};</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h2 id="once">once</h2>
 
 <p>Return a new callback, once any of the returned callbacks is called,
-go to next step and ignore the other returned callbacks.</p></div></div><div class="code"><div class="wrapper">  <span class="nx">p</span><span class="p">.</span><span class="nx">once</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(){</span>
-    <span class="kd">var</span> <span class="nx">cur</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">cursor</span><span class="p">,</span>
+go to next step and ignore the other returned callbacks.</p></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h3 id="tips-and-annotation">Tips and Annotation</h3></div></div></div><div class="segment"><div class="code"><div class="wrapper">  <span class="nx">p</span><span class="p">.</span><span class="nx">once</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(){</span>
+    <span class="kd">var</span> <span class="nx">cur</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">current</span><span class="p">(),</span>
       <span class="nx">go</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">go</span><span class="p">,</span>
       <span class="nx">scope</span> <span class="o">=</span> <span class="k">this</span><span class="p">;</span>
 
-    <span class="k">return</span> <span class="kd">function</span><span class="p">(){</span>
-      <span class="k">if</span> <span class="p">(</span><span class="nx">cur</span> <span class="o">!=</span> <span class="nx">scope</span><span class="p">.</span><span class="nx">cursor</span><span class="p">){</span>
+    <span class="k">return</span> <span class="kd">function</span><span class="p">(){</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><ul>
+<li><p>If we already went to following task and then 1 callback is called 
+we will ignore it.
+In order to make sure below code can safely advance to next task: 
+ var cb = this.once();
+ this.go();
+ cb();</p></li>
+<li><p>When once() is used with all() together, if the callback of once() is
+called, we advance the cursor and ignore the callbacks of all(), vise 
+versa</p></li>
+</ul></div></div><div class="code"><div class="wrapper">      <span class="k">if</span> <span class="p">(</span><span class="nx">cur</span> <span class="o">!==</span> <span class="nx">scope</span><span class="p">.</span><span class="nx">current</span><span class="p">()</span> <span class="o">||</span> <span class="nx">cur</span><span class="p">.</span><span class="nx">went</span> <span class="o">===</span> <span class="kc">true</span><span class="p">){</span>
         <span class="k">return</span><span class="p">;</span>
       <span class="p">}</span>
 
-      <span class="nx">go</span><span class="p">();</span>
+      <span class="nx">go</span><span class="p">.</span><span class="nx">apply</span><span class="p">(</span><span class="nx">scope</span><span class="p">,</span> <span class="nx">arguments</span><span class="p">);</span>
     <span class="p">};</span>
   <span class="p">};</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h2 id="all">all</h2>
 
@@ -318,17 +351,14 @@ ealier then you expected.</p>
 });
 </code></pre></li>
 </ul></div></div><div class="code"><div class="wrapper">    <span class="nx">p</span><span class="p">.</span><span class="nx">all</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(){</span>
-        <span class="kd">var</span> <span class="nx">cur</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">cursor</span><span class="p">,</span>
-            <span class="nx">go</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">go</span><span class="p">;</span>
+        <span class="kd">var</span> <span class="nx">cur</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">current</span><span class="p">(),</span>
+            <span class="nx">go</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">go</span><span class="p">,</span>
+            <span class="nx">outerScope</span> <span class="o">=</span> <span class="k">this</span><span class="p">;</span>
 
         <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">cur</span><span class="p">){</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><ul>
 <li>If all tasks are executed and then <code>all()</code> was called, 
 it will return an <code>noop</code></li>
 </ul></div></div><div class="code"><div class="wrapper">          <span class="k">return</span> <span class="nx">noop</span><span class="p">;</span>
-        <span class="p">}</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><ul>
-<li>Internally use <code>lastCalls[]</code> to store 'generated callback'.</li>
-</ul></div></div><div class="code"><div class="wrapper">        <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">cur</span><span class="p">.</span><span class="nx">lastCalls</span><span class="p">){</span>
-            <span class="nx">cur</span><span class="p">.</span><span class="nx">lastCalls</span> <span class="o">=</span> <span class="p">[];</span>
         <span class="p">}</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><ul>
 <li><p>If the 'returned callback' is executed within the generating 
 synchronous context, now Rytm will mondatorily delay the actual execution of 
@@ -347,16 +377,21 @@ This is to prevent a usage pitfall in old version of Rytm:</p>
 
 <p>Here we tick the <code>cur</code> in an asychronous context to tell if the calling is 
 happened async or sync</p></li>
-</ul></div></div><div class="code"><div class="wrapper">        <span class="k">if</span> <span class="p">(</span><span class="nx">cur</span><span class="p">.</span><span class="nx">ticked</span> <span class="o">==</span> <span class="kc">null</span><span class="p">){</span>
-            <span class="nx">cur</span><span class="p">.</span><span class="nx">ticked</span> <span class="o">=</span> <span class="kc">false</span><span class="p">;</span>
+</ul></div></div><div class="code"><div class="wrapper">        <span class="k">if</span> <span class="p">(</span><span class="nx">cur</span><span class="p">.</span><span class="nx">ticked</span> <span class="o">===</span> <span class="kc">false</span><span class="p">){</span>
             <span class="nx">setTimeout</span><span class="p">(</span><span class="kd">function</span><span class="p">(){</span>
                 <span class="nx">cur</span><span class="p">.</span><span class="nx">ticked</span> <span class="o">=</span> <span class="kc">true</span><span class="p">;</span>
-            <span class="p">},</span> <span class="mi">0</span><span class="p">)</span>
+            <span class="p">},</span> <span class="mi">0</span><span class="p">);</span>
         <span class="p">}</span>
 
         <span class="kd">var</span> <span class="nx">ret</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(){</span>
             <span class="kd">var</span> <span class="nx">scope</span> <span class="o">=</span> <span class="k">this</span><span class="p">,</span>
-                <span class="nx">args</span> <span class="o">=</span> <span class="nx">arguments</span><span class="p">;</span>
+                <span class="nx">args</span> <span class="o">=</span> <span class="nx">arguments</span><span class="p">;</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><ul>
+<li>If all() is used with the other method, such as once(), we do it as 'first
+done first serv'</li>
+</ul></div></div><div class="code"><div class="wrapper">            <span class="k">if</span> <span class="p">(</span><span class="nx">cur</span> <span class="o">!==</span> <span class="nx">outerScope</span><span class="p">.</span><span class="nx">current</span><span class="p">()</span> <span class="o">||</span> <span class="nx">cur</span><span class="p">.</span><span class="nx">went</span> <span class="o">===</span> <span class="kc">true</span><span class="p">){</span>
+                <span class="nx">cur</span><span class="p">.</span><span class="nx">lastCalls</span> <span class="o">=</span> <span class="p">[];</span>
+                <span class="k">return</span><span class="p">;</span>
+            <span class="p">}</span>
             
             <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">cur</span><span class="p">.</span><span class="nx">ticked</span><span class="p">){</span>
                 <span class="nx">setTimeout</span><span class="p">(</span><span class="kd">function</span><span class="p">(){</span>
@@ -395,8 +430,8 @@ consumed faster then expected.
 call of the next task. </p>
 
 <h3 id="tips-and-annotation">Tips and Annotation</h3></div></div><div class="code"><div class="wrapper">    <span class="nx">p</span><span class="p">.</span><span class="nx">next</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(){</span>
-        <span class="kd">var</span> <span class="nx">cur</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">cursor</span><span class="p">,</span>
-            <span class="nx">go</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">go</span><span class="p">;</span>
+        <span class="kd">var</span> <span class="nx">cur</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">current</span><span class="p">(),</span>
+            <span class="nx">go</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">go</span><span class="p">,</span> <span class="nx">result</span><span class="p">;</span>
         
         <span class="k">if</span> <span class="p">(</span><span class="nx">cur</span><span class="p">.</span><span class="nx">next</span> <span class="o">&amp;&amp;</span> <span class="nx">cur</span><span class="p">.</span><span class="nx">next</span><span class="p">.</span><span class="nx">callback</span><span class="p">){</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><ul>
 <li>Private member _inNextCallContext indicates how many level of nested next() is called
@@ -404,7 +439,7 @@ correspondingly, later call to <code>go()</code> will have to skip _inNextCallCo
 tasks.</li>
 </ul></div></div><div class="code"><div class="wrapper">            <span class="k">this</span><span class="p">.</span><span class="nx">_inNextCallContext</span><span class="o">++</span><span class="p">;</span>
 
-            <span class="kd">var</span> <span class="nx">result</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">cur</span><span class="p">.</span><span class="nx">next</span><span class="p">.</span><span class="nx">callback</span><span class="p">.</span><span class="nx">call</span><span class="p">(</span><span class="k">this</span><span class="p">);</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><ul>
+            <span class="nx">result</span> <span class="o">=</span> <span class="nx">cur</span><span class="p">.</span><span class="nx">next</span><span class="p">.</span><span class="nx">callback</span><span class="p">.</span><span class="nx">apply</span><span class="p">(</span><span class="k">this</span><span class="p">,</span> <span class="nx">arguments</span><span class="p">);</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><ul>
 <li><code>next</code> makes sure the behavior is the same as <code>go</code> when the task has return value.
 Return anything other than undefine will cause advancing to next task immediately</li>
 </ul></div></div><div class="code"><div class="wrapper">            <span class="k">if</span> <span class="p">(</span><span class="nx">result</span> <span class="o">!==</span> <span class="nx">undef</span><span class="p">){</span>
@@ -414,9 +449,12 @@ Return anything other than undefine will cause advancing to next task immediatel
             <span class="k">this</span><span class="p">.</span><span class="nx">_inNextCallContext</span><span class="o">--</span><span class="p">;</span>
         <span class="p">}</span>
 
-        <span class="k">return</span> <span class="kc">null</span><span class="p">;</span>
+        <span class="k">return</span> <span class="nx">result</span><span class="p">;</span>
 
-    <span class="p">};</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h2 id="todo">TODO</h2></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h3 id="reverse">reverse</h3>
+    <span class="p">};</span>
+  
+  <span class="k">return</span> <span class="nx">Rytm</span><span class="p">;</span>
+<span class="p">});</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h2 id="todo">TODO</h2></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h3 id="reverse">reverse</h3>
 
 <h3 id="bounce">bounce</h3>
 
@@ -428,6 +466,6 @@ Return anything other than undefine will cause advancing to next task immediatel
 
 <h3 id="tests">tests</h3></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h3 id="dispose">dispose</h3>
 
-<p>Release and destroy current instance (useful when trying to ignore any futher step )</p></div></div><div class="code"><div class="wrapper">  
-  <span class="k">return</span> <span class="nx">Rytm</span><span class="p">;</span>
-<span class="p">});</span></div></div></div></div></body></html>
+<p>Release and destroy current instance (useful when trying to ignore any futher step )</p></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h3 id="strict-mode">strict mode</h3>
+
+<p>go() cannot be called multiple times or used with the methods such as next()</p></div></div></div></div></body></html>

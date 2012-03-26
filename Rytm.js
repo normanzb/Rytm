@@ -108,24 +108,47 @@
     // it creates a node which can be used in the task sequence.
     // ### Schema
     //      {
-    //          // the actual 'task function' in current task
+    //          // callback - the actual 'task function' in current task
     //          callback: actuallTaskFunc,
-    //          // the reference to next node in sequence
+    //          // next - the reference to next node in sequence
     //          next: nextNode,
-    //          // An array that stores callback which returned 
+    //          // prev - the reference to prev node
+    //          prev: prevNode
+    //          // lastCalls - An array that stores callback which returned 
     //          // by `all()`
     //          lastCalls: [],
-    //          // ticked = true means execution of current task is done
+    //          // ticked - true means execution of current task is done
     //          // and it is safe to advance to next task
     //          ticked: false
+    //          // went - true to means the cursor advancing is already done
+    //          // and do not do it again.
     //      }
 	p._createNode = function(callback, next){
 		if (next === undef){
 			next = null;
 		}
-		var ret = {callback: callback, next: next, nextWrapper: null};
+		var ret = {
+            callback: callback, 
+            next: next, 
+            prev: null,
+            lastCalls: [],
+            ticked: false, 
+            went: false
+        };
 		return ret;
 	};
+
+    // ## current
+    //
+    // Get current task node
+    //
+    p.current = function(){
+        if (this.cursor){
+            return this.cursor.prev;
+        }
+
+        return this.steps[this.steps.length - 1];
+    };
 
 	// ## beat
     // 
@@ -141,8 +164,11 @@
             loadSteps.call(this, arguments);
         }
         else{
-    		var stepStruct = this._createNode(callback);
-    		this.steps[this.steps.length - 1].next = stepStruct;
+    		var stepStruct = this._createNode(callback),
+                lastStep = this.steps[this.steps.length - 1];
+
+            stepStruct.prev = lastStep;
+    		lastStep.next = stepStruct;
     		this.steps.push(stepStruct);
     		
             // * Once current Rytm instance executed
@@ -230,12 +256,16 @@
 		
 		callback = this.cursor.callback;
 
-		// * `_go()` will internally setup/normalize the parameters 
-		this.cursor.lastCalls = [];
+        // TODO: tick cursor here
 		
 		if (callback == null){
 			return this;
 		}
+
+        var current = this.current();
+        if (current){
+            current.went = true;
+        }
 		
 		//   and then advance to next
 		this.cursor = this.cursor.next;
@@ -299,13 +329,25 @@
     // Return a new callback, once any of the returned callbacks is called,
     // go to next step and ignore the other returned callbacks.
 
+    // ### Tips and Annotation
+
 	p.once = function(){
-		var cur = this.cursor,
+		var cur = this.current(),
 			go = this.go,
 			scope = this;
 
 		return function(){
-			if (cur != scope.cursor){
+            // * If we already went to following task and then 1 callback is called 
+            //   we will ignore it.
+            //   In order to make sure below code can safely advance to next task: 
+            //      var cb = this.once();
+            //      this.go();
+            //      cb();
+            //
+            // * When once() is used with all() together, if the callback of once() is
+            //   called, we advance the cursor and ignore the callbacks of all(), vise 
+            //   versa
+			if (cur !== scope.current() || cur.went === true){
 				return;
 			}
 
@@ -339,18 +381,14 @@
     //          
 
     p.all = function(){
-        var cur = this.cursor,
-            go = this.go;
+        var cur = this.current(),
+            go = this.go,
+            outerScope = this;
 
         if (!cur){
         	// * If all tasks are executed and then `all()` was called, 
             //   it will return an `noop`
         	return noop;
-        }
-
-        // * Internally use `lastCalls[]` to store 'generated callback'.
-        if (!cur.lastCalls){
-            cur.lastCalls = [];
         }
 
         // * If the 'returned callback' is executed within the generating 
@@ -369,16 +407,22 @@
         //
         //   Here we tick the `cur` in an asychronous context to tell if the calling is 
         //   happened async or sync
-        if (cur.ticked == null){
-            cur.ticked = false;
+        if (cur.ticked === false){
             setTimeout(function(){
                 cur.ticked = true;
-            }, 0)
+            }, 0);
         }
 
         var ret = function(){
             var scope = this,
                 args = arguments;
+
+            // * If all() is used with the other method, such as once(), we do it as 'first
+            //    done first serv'
+            if (cur !== outerScope.current() || cur.went === true){
+                cur.lastCalls = [];
+                return;
+            }
             
             if (!cur.ticked){
                 setTimeout(function(){
@@ -421,16 +465,16 @@
     //
     // ### Tips and Annotation
     p.next = function(){
-        var cur = this.cursor,
+        var cur = this.current(),
             go = this.go, result;
         
-        if (cur && cur.callback){
+        if (cur.next && cur.next.callback){
             // * Private member _inNextCallContext indicates how many level of nested next() is called
             //   correspondingly, later call to `go()` will have to skip _inNextCallContext
             //   tasks.
             this._inNextCallContext++;
 
-            result = cur.callback.apply(this, arguments);
+            result = cur.next.callback.apply(this, arguments);
 
             // * `next` makes sure the behavior is the same as `go` when the task has return value.
             //   Return anything other than undefine will cause advancing to next task immediately
@@ -444,7 +488,9 @@
         return result;
 
     };
-
+	
+	return Rytm;
+});
 
 // ## TODO
 
@@ -469,6 +515,6 @@
 
 // ### dispose
 // Release and destroy current instance (useful when trying to ignore any futher step )
-	
-	return Rytm;
-});
+
+// ### strict mode
+// go() cannot be called multiple times or used with the methods such as next()
