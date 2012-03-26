@@ -58,6 +58,14 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
           "type": "heading",
           "data": {
             "level": 1,
+            "title": "Build Doc",
+            "slug": "build-doc"
+          },
+          "depth": 1
+        }, {
+          "type": "heading",
+          "data": {
+            "level": 1,
             "title": "Run test",
             "slug": "run-test"
           },
@@ -140,6 +148,14 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
                   "depth": 3
                 }
               ]
+            }, {
+              "type": "heading",
+              "data": {
+                "level": 2,
+                "title": "current",
+                "slug": "current"
+              },
+              "depth": 2
             }, {
               "type": "heading",
               "data": {
@@ -228,7 +244,26 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
                 "title": "defer",
                 "slug": "defer"
               },
-              "depth": 2
+              "depth": 2,
+              "children": [
+                {
+                  "type": "heading",
+                  "data": {
+                    "level": 3,
+                    "title": "Parameters",
+                    "slug": "parameters"
+                  },
+                  "depth": 3
+                }, {
+                  "type": "heading",
+                  "data": {
+                    "level": 3,
+                    "title": "Tips and Annotations",
+                    "slug": "tips-and-annotations"
+                  },
+                  "depth": 3
+                }
+              ]
             }, {
               "type": "heading",
               "data": {
@@ -236,7 +271,18 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
                 "title": "once",
                 "slug": "once"
               },
-              "depth": 2
+              "depth": 2,
+              "children": [
+                {
+                  "type": "heading",
+                  "data": {
+                    "level": 3,
+                    "title": "Tips and Annotation",
+                    "slug": "tips-and-annotation"
+                  },
+                  "depth": 3
+                }
+              ]
             }, {
               "type": "heading",
               "data": {
@@ -356,6 +402,14 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
                     "slug": "dispose"
                   },
                   "depth": 3
+                }, {
+                  "type": "heading",
+                  "data": {
+                    "level": 3,
+                    "title": "strict mode",
+                    "slug": "strict-mode"
+                  },
+                  "depth": 3
                 }
               ]
             }
@@ -419,6 +473,14 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
               "depth": 3
             }
           ]
+        }, {
+          "type": "heading",
+          "data": {
+            "level": 2,
+            "title": "current",
+            "slug": "current"
+          },
+          "depth": 2
         }, {
           "type": "heading",
           "data": {
@@ -507,7 +569,26 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
             "title": "defer",
             "slug": "defer"
           },
-          "depth": 2
+          "depth": 2,
+          "children": [
+            {
+              "type": "heading",
+              "data": {
+                "level": 3,
+                "title": "Parameters",
+                "slug": "parameters"
+              },
+              "depth": 3
+            }, {
+              "type": "heading",
+              "data": {
+                "level": 3,
+                "title": "Tips and Annotations",
+                "slug": "tips-and-annotations"
+              },
+              "depth": 3
+            }
+          ]
         }, {
           "type": "heading",
           "data": {
@@ -515,7 +596,18 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
             "title": "once",
             "slug": "once"
           },
-          "depth": 2
+          "depth": 2,
+          "children": [
+            {
+              "type": "heading",
+              "data": {
+                "level": 3,
+                "title": "Tips and Annotation",
+                "slug": "tips-and-annotation"
+              },
+              "depth": 3
+            }
+          ]
         }, {
           "type": "heading",
           "data": {
@@ -633,6 +725,14 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
                 "level": 3,
                 "title": "dispose",
                 "slug": "dispose"
+              },
+              "depth": 3
+            }, {
+              "type": "heading",
+              "data": {
+                "level": 3,
+                "title": "strict mode",
+                "slug": "strict-mode"
               },
               "depth": 3
             }
