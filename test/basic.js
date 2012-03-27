@@ -460,6 +460,38 @@ describe('Rytm', function(){
                 }, spy)).go();
             }
         );
+
+        it('should execute the coming task when all of its produced callbacks get called，' +
+            'even when one of its produced callback is called synchronously and immediately. ', 
+            function(done){
+                var spy = chai.spy(), asyncCallCounter = 1;
+                (new Rytm(function(){
+
+                    // execute it immediately
+                    this.all()();
+                    for(var l = 99; l--; ){
+                        setTimeout((function(){
+                            
+                            asyncCallCounter++
+
+                            this();
+
+                            if (asyncCallCounter >= 100){
+
+                                expect(spy).have.been.called.once;
+
+                                done();
+                            }
+                            else if (asyncCallCounter > 0){
+                                expect(spy).have.been.not_called;
+                            }
+                            
+                            
+                        }).bind(this.all()), l);
+                    }
+                }, spy)).go();
+            }
+        );
     });
 
     // TODO: describe wait()
