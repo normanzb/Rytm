@@ -467,16 +467,19 @@ describe('Rytm', function(){
     describe('.next', function(){
         it('should be a reference next task.', 
             function(done){
-                var spy = chai.spy();
+                var spy = chai.spy(), args = [1,true,{}];
 
                 (new Rytm(function(){
-                    this.next();
+                    this.next.apply(this, args);
 
                     expect(spy).have.been.called.once;
 
                     done();
 
-                }, spy)).go();
+                }, function(){
+                    expect(arguments).satisfy(testHelpers.compareArgs.bind(null, args));
+                    return spy.apply(this, arguments);
+                })).go();
             }
         );
 
