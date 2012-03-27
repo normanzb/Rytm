@@ -64,8 +64,11 @@ without AMD loader</li>
         <span class="k">this</span><span class="p">.</span><span class="nx">steps</span> <span class="o">=</span> <span class="p">[</span><span class="k">this</span><span class="p">.</span><span class="nx">_createNode</span><span class="p">(</span><span class="kd">function</span><span class="p">(){</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><ul>
 <li>The "head node" simply redirect the calls to next step</li>
 </ul></div></div><div class="code"><div class="wrapper">            <span class="k">this</span><span class="p">.</span><span class="nx">_go</span><span class="p">.</span><span class="nx">apply</span><span class="p">(</span><span class="k">this</span><span class="p">,</span> <span class="nx">arguments</span><span class="p">);</span>
-        <span class="p">})];</span>
-        <span class="k">this</span><span class="p">.</span><span class="nx">cursor</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">steps</span><span class="p">[</span><span class="mi">0</span><span class="p">];</span>
+        <span class="p">})];</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><ul>
+<li>this.cursor.value is actually shared between TaskContexts</li>
+</ul></div></div><div class="code"><div class="wrapper">        <span class="k">this</span><span class="p">.</span><span class="nx">cursor</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="nx">value</span><span class="o">:</span> <span class="k">this</span><span class="p">.</span><span class="nx">steps</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="p">};</span>
         </div></div></div><div class="segment"><div class="comments"><div class="wrapper"><ul>
 <li>Creates <code>go()</code>, which wraps <code>_go()</code>, make sure the context of <code>go()</code> is always current
 instance</li>
@@ -97,7 +100,7 @@ tasks</li>
 
   <span class="kd">var</span> <span class="nx">p</span> <span class="o">=</span> <span class="nx">Rytm</span><span class="p">.</span><span class="nx">prototype</span><span class="p">;</span>
 
-    <span class="nx">p</span><span class="p">.</span><span class="nx">_inNextCallContext</span> <span class="o">=</span> <span class="kc">false</span><span class="p">;</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h2 id="-createnode">_createNode</h2>
+    <span class="nx">p</span><span class="p">.</span><span class="nx">_inNextCallContext</span> <span class="o">=</span> <span class="mi">0</span><span class="p">;</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h2 id="-createnode">_createNode</h2>
 
 <p>A private method which not supposed to be used externally,
 it creates a node which can be used in the task sequence.</p>
@@ -135,9 +138,17 @@ it creates a node which can be used in the task sequence.</p>
     <span class="k">return</span> <span class="nx">ret</span><span class="p">;</span>
   <span class="p">};</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h2 id="current">current</h2>
 
-<p>Get current task node</p></div></div><div class="code"><div class="wrapper">    <span class="nx">p</span><span class="p">.</span><span class="nx">current</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(){</span>
-        <span class="k">if</span> <span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">cursor</span><span class="p">){</span>
-            <span class="k">return</span> <span class="k">this</span><span class="p">.</span><span class="nx">cursor</span><span class="p">.</span><span class="nx">prev</span><span class="p">;</span>
+<p>Get current task node</p>
+
+<h3 id="tips-and-annotations">Tips and Annotations</h3></div></div><div class="code"><div class="wrapper">    <span class="nx">p</span><span class="p">.</span><span class="nx">current</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(){</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><ul>
+<li>It will check if we are in TaskContext, if we are,
+the cursor is locked, it will return the locked cursor.</li>
+</ul></div></div><div class="code"><div class="wrapper">        <span class="k">if</span> <span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">_current</span><span class="p">){</span>
+            <span class="k">return</span> <span class="k">this</span><span class="p">.</span><span class="nx">_current</span><span class="p">;</span>
+        <span class="p">}</span>
+
+        <span class="k">if</span> <span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">cursor</span><span class="p">.</span><span class="nx">value</span><span class="p">){</span>
+            <span class="k">return</span> <span class="k">this</span><span class="p">.</span><span class="nx">cursor</span><span class="p">.</span><span class="nx">value</span><span class="p">.</span><span class="nx">prev</span><span class="p">;</span>
         <span class="p">}</span>
 
         <span class="k">return</span> <span class="k">this</span><span class="p">.</span><span class="nx">steps</span><span class="p">[</span><span class="k">this</span><span class="p">.</span><span class="nx">steps</span><span class="p">.</span><span class="nx">length</span> <span class="o">-</span> <span class="mi">1</span><span class="p">];</span>
@@ -168,8 +179,8 @@ and after the execution of current instance
 there are newly added tasks, go() will start
 from previous stop point and work through the 
 newly added task exclusively</li>
-</ul></div></div><div class="code"><div class="wrapper">        <span class="k">if</span> <span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">cursor</span> <span class="o">==</span> <span class="kc">null</span><span class="p">){</span>
-          <span class="k">this</span><span class="p">.</span><span class="nx">cursor</span> <span class="o">=</span> <span class="nx">stepStruct</span><span class="p">;</span>
+</ul></div></div><div class="code"><div class="wrapper">        <span class="k">if</span> <span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">cursor</span><span class="p">.</span><span class="nx">value</span> <span class="o">==</span> <span class="kc">null</span><span class="p">){</span>
+          <span class="k">this</span><span class="p">.</span><span class="nx">cursor</span><span class="p">.</span><span class="nx">value</span> <span class="o">=</span> <span class="nx">stepStruct</span><span class="p">;</span>
         <span class="p">}</span>
         <span class="p">}</span>
     
@@ -217,15 +228,26 @@ worrying the changing of context.</p>
 
 <h3 id="tips-and-annotations">Tips and Annotations</h3></div></div><div class="code"><div class="wrapper">  <span class="nx">p</span><span class="p">.</span><span class="nx">_go</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(){</span>
     
-    <span class="kd">var</span> <span class="nx">callback</span><span class="p">;</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><ul>
+    <span class="kd">var</span> <span class="nx">callback</span><span class="p">,</span> <span class="nx">ctx</span><span class="p">,</span> <span class="nx">current</span><span class="p">,</span> <span class="nx">contextualScope</span> <span class="o">=</span> <span class="k">this</span><span class="p">;</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><ul>
+<li><code>go()</code> can force <code>this</code> points to the instance of Rytm,
+so in most case we don't have to check this._instance.</li>
+</ul></div></div><div class="code"><div class="wrapper">        <span class="k">if</span> <span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">_instance</span><span class="p">){</span>
+            <span class="nx">contextualScope</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">_instance</span><span class="p">;</span>
+        <span class="p">}</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><ul>
 <li>_go() will check if we are in a nested <code>next()</code> calling context
 by visiting _inNextCallContext
 if we are, we will have to skip same step because they might already
 be called. </li>
-</ul></div></div><div class="code"><div class="wrapper">        <span class="k">while</span> <span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">_inNextCallContext</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">){</span>
-            <span class="k">this</span><span class="p">.</span><span class="nx">_inNextCallContext</span><span class="o">--</span><span class="p">;</span>
-            <span class="k">if</span> <span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">cursor</span><span class="p">.</span><span class="nx">next</span><span class="p">){</span>
-                <span class="k">this</span><span class="p">.</span><span class="nx">cursor</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">cursor</span><span class="p">.</span><span class="nx">next</span><span class="p">;</span>
+</ul></div></div><div class="code"><div class="wrapper">        <span class="k">while</span> <span class="p">(</span><span class="nx">contextualScope</span><span class="p">.</span><span class="nx">_inNextCallContext</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">){</span>
+            
+            <span class="nx">contextualScope</span><span class="p">.</span><span class="nx">_inNextCallContext</span><span class="o">--</span><span class="p">;</span>
+
+            <span class="k">if</span> <span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">cursor</span><span class="p">.</span><span class="nx">value</span><span class="p">.</span><span class="nx">prev</span><span class="p">){</span>
+                <span class="k">this</span><span class="p">.</span><span class="nx">cursor</span><span class="p">.</span><span class="nx">value</span><span class="p">.</span><span class="nx">prev</span><span class="p">.</span><span class="nx">went</span> <span class="o">=</span> <span class="kc">true</span><span class="p">;</span>
+            <span class="p">}</span>
+            <span class="k">this</span><span class="p">.</span><span class="nx">cursor</span><span class="p">.</span><span class="nx">value</span><span class="p">.</span><span class="nx">went</span> <span class="o">=</span> <span class="kc">true</span><span class="p">;</span>
+            <span class="k">if</span> <span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">cursor</span><span class="p">.</span><span class="nx">value</span><span class="p">.</span><span class="nx">next</span><span class="p">){</span>
+                <span class="k">this</span><span class="p">.</span><span class="nx">cursor</span><span class="p">.</span><span class="nx">value</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">cursor</span><span class="p">.</span><span class="nx">value</span><span class="p">.</span><span class="nx">next</span><span class="p">;</span>
             <span class="p">}</span>
             <span class="k">else</span><span class="p">{</span>
                 <span class="k">throw</span> <span class="s2">&quot;Rytm: Strangely we are in a nested context &quot;</span>
@@ -233,22 +255,32 @@ be called. </li>
             <span class="p">}</span>
         <span class="p">}</span>
     
-    <span class="k">if</span> <span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">cursor</span> <span class="o">==</span> <span class="kc">null</span><span class="p">){</span>
+    <span class="k">if</span> <span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">cursor</span><span class="p">.</span><span class="nx">value</span> <span class="o">==</span> <span class="kc">null</span><span class="p">){</span>
       <span class="k">return</span> <span class="k">this</span><span class="p">;</span>
     <span class="p">}</span>
     
-    <span class="nx">callback</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">cursor</span><span class="p">.</span><span class="nx">callback</span><span class="p">;</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>TODO: tick cursor here</p></div></div><div class="code"><div class="wrapper">    
+    <span class="nx">callback</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">cursor</span><span class="p">.</span><span class="nx">value</span><span class="p">.</span><span class="nx">callback</span><span class="p">;</span>
+
+        <span class="cm">/* TODO: tick cursor here */</span>
+    
     <span class="k">if</span> <span class="p">(</span><span class="nx">callback</span> <span class="o">==</span> <span class="kc">null</span><span class="p">){</span>
       <span class="k">return</span> <span class="k">this</span><span class="p">;</span>
     <span class="p">}</span>
 
-        <span class="kd">var</span> <span class="nx">current</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">current</span><span class="p">();</span>
+        <span class="nx">current</span> <span class="o">=</span> <span class="nx">contextualScope</span><span class="p">.</span><span class="nx">current</span><span class="p">();</span>
+
         <span class="k">if</span> <span class="p">(</span><span class="nx">current</span><span class="p">){</span>
             <span class="nx">current</span><span class="p">.</span><span class="nx">went</span> <span class="o">=</span> <span class="kc">true</span><span class="p">;</span>
         <span class="p">}</span>
-    </div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>and then advance to next</p></div></div><div class="code"><div class="wrapper">    <span class="k">this</span><span class="p">.</span><span class="nx">cursor</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">cursor</span><span class="p">.</span><span class="nx">next</span><span class="p">;</span>
 
-    <span class="kd">var</span> <span class="nx">result</span> <span class="o">=</span> <span class="nx">callback</span><span class="p">.</span><span class="nx">apply</span><span class="p">(</span><span class="k">this</span><span class="p">,</span> <span class="nx">arguments</span><span class="p">);</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><ul>
+        <span class="k">if</span> <span class="p">(</span><span class="k">this</span> <span class="k">instanceof</span> <span class="nx">TaskContext</span><span class="p">){</span>
+            <span class="nx">ctx</span> <span class="o">=</span> <span class="nx">createTaskContext</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">_instance</span><span class="p">);</span>
+        <span class="p">}</span>
+        <span class="k">else</span><span class="p">{</span>
+            <span class="nx">ctx</span> <span class="o">=</span> <span class="nx">createTaskContext</span><span class="p">(</span><span class="k">this</span><span class="p">);</span>
+        <span class="p">}</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>and then advance to next</p></div></div><div class="code"><div class="wrapper">        <span class="k">this</span><span class="p">.</span><span class="nx">cursor</span><span class="p">.</span><span class="nx">value</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">cursor</span><span class="p">.</span><span class="nx">value</span><span class="p">.</span><span class="nx">next</span><span class="p">;</span>
+
+    <span class="kd">var</span> <span class="nx">result</span> <span class="o">=</span> <span class="nx">callback</span><span class="p">.</span><span class="nx">apply</span><span class="p">(</span><span class="nx">ctx</span><span class="p">,</span> <span class="nx">arguments</span><span class="p">);</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><ul>
 <li>_go() will also check if the current task has a return value
 if there is, then consider the result as the parameter of
 next task
@@ -422,7 +454,7 @@ done first serv'</li>
 
 <p>A reference to the next task.</p>
 
-<p>The difference between <code>next</code> and<code>go</code> is:
+<p>The difference between <code>next</code> and <code>go</code> is:
 once <code>go</code> gets called, we will immediately advance the internal cursor to next step
 so if the <code>go</code> gets called multiple time, your tasks in sequence will be 
 consumed faster then expected.
@@ -431,13 +463,17 @@ call of the next task. </p>
 
 <h3 id="tips-and-annotation">Tips and Annotation</h3></div></div><div class="code"><div class="wrapper">    <span class="nx">p</span><span class="p">.</span><span class="nx">next</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(){</span>
         <span class="kd">var</span> <span class="nx">cur</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">current</span><span class="p">(),</span>
-            <span class="nx">go</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">go</span><span class="p">,</span> <span class="nx">result</span><span class="p">;</span>
+            <span class="nx">go</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">go</span><span class="p">,</span> <span class="nx">result</span><span class="p">;</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><ul>
+<li><code>next()</code> will do nothing once <code>go()</code> gets called.</li>
+</ul></div></div><div class="code"><div class="wrapper">        <span class="k">if</span> <span class="p">(</span><span class="nx">cur</span><span class="p">.</span><span class="nx">went</span><span class="p">){</span>
+            <span class="k">return</span><span class="p">;</span>
+        <span class="p">}</span>
         
         <span class="k">if</span> <span class="p">(</span><span class="nx">cur</span><span class="p">.</span><span class="nx">next</span> <span class="o">&amp;&amp;</span> <span class="nx">cur</span><span class="p">.</span><span class="nx">next</span><span class="p">.</span><span class="nx">callback</span><span class="p">){</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><ul>
-<li>Private member _inNextCallContext indicates how many level of nested next() is called
-correspondingly, later call to <code>go()</code> will have to skip _inNextCallContext
+<li>Private member <code>_inNextCallContext</code> indicates how many level of nested next() is called
+correspondingly, later call to <code>go()</code> will have to skip the number of <code>_inNextCallContext</code>
 tasks.</li>
-</ul></div></div><div class="code"><div class="wrapper">            <span class="k">this</span><span class="p">.</span><span class="nx">_inNextCallContext</span><span class="o">++</span><span class="p">;</span>
+</ul></div></div><div class="code"><div class="wrapper">            <span class="k">this</span><span class="p">.</span><span class="nx">_instance</span><span class="p">.</span><span class="nx">_inNextCallContext</span><span class="o">++</span><span class="p">;</span>
 
             <span class="nx">result</span> <span class="o">=</span> <span class="nx">cur</span><span class="p">.</span><span class="nx">next</span><span class="p">.</span><span class="nx">callback</span><span class="p">.</span><span class="nx">apply</span><span class="p">(</span><span class="k">this</span><span class="p">,</span> <span class="nx">arguments</span><span class="p">);</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><ul>
 <li><code>next</code> makes sure the behavior is the same as <code>go</code> when the task has return value.
@@ -446,12 +482,28 @@ Return anything other than undefine will cause advancing to next task immediatel
                 <span class="k">this</span><span class="p">.</span><span class="nx">go</span><span class="p">();</span>
             <span class="p">}</span>
 
-            <span class="k">this</span><span class="p">.</span><span class="nx">_inNextCallContext</span><span class="o">--</span><span class="p">;</span>
+            <span class="k">if</span> <span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">_instance</span><span class="p">.</span><span class="nx">_inNextCallContext</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">){</span>
+                <span class="k">this</span><span class="p">.</span><span class="nx">_instance</span><span class="p">.</span><span class="nx">_inNextCallContext</span><span class="o">--</span><span class="p">;</span>
+            <span class="p">}</span>
         <span class="p">}</span>
 
         <span class="k">return</span> <span class="nx">result</span><span class="p">;</span>
 
-    <span class="p">};</span>
+    <span class="p">};</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h2 id="taskcontext">TaskContext</h2>
+
+<p><code>this</code> in task callback actually points to an instance of TaskContext,</p></div></div><div class="code"><div class="wrapper">    <span class="kd">function</span> <span class="nx">TaskContext</span><span class="p">(</span><span class="nx">rytm</span><span class="p">){</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><p>TaskContext will make sure calls are fixed to current task.
+For example, <code>next()</code> will always call to callback of next task even
+when Rytm.cursor is advanced.</p></div></div><div class="code"><div class="wrapper">        <span class="k">this</span><span class="p">.</span><span class="nx">_current</span> <span class="o">=</span> <span class="nx">rytm</span><span class="p">.</span><span class="nx">cursor</span><span class="p">.</span><span class="nx">value</span><span class="p">;</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">_instance</span> <span class="o">=</span> <span class="nx">rytm</span><span class="p">;</span>
+    <span class="p">};</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h2 id="createtaskcontext">createTaskContext</h2>
+
+<p>Create and return an instance of TaskContext, set current instance.<strong>proto</strong> to 
+current instance of Rytm, so we can visit the data and method under current instance
+of Rytm.</p></div></div><div class="code"><div class="wrapper">    <span class="kd">function</span> <span class="nx">createTaskContext</span><span class="p">(</span><span class="nx">rytm</span><span class="p">){</span>
+        <span class="nx">TaskContext</span><span class="p">.</span><span class="nx">prototype</span> <span class="o">=</span> <span class="nx">rytm</span><span class="p">;</span>
+        <span class="kd">var</span> <span class="nx">ret</span> <span class="o">=</span> <span class="k">new</span> <span class="nx">TaskContext</span><span class="p">(</span><span class="nx">rytm</span><span class="p">);</span>
+        <span class="k">return</span> <span class="nx">ret</span><span class="p">;</span>
+    <span class="p">}</span>
   
   <span class="k">return</span> <span class="nx">Rytm</span><span class="p">;</span>
 <span class="p">});</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h2 id="todo">TODO</h2></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h3 id="reverse">reverse</h3>

@@ -89,6 +89,46 @@ describe('Rytm', function(){
         testHelpers.testMultipleTask(paramPasser);
     });
 
+    describe('.current', function(){
+        it('should always return the node of finished task, ' + 
+           'while contextual .current() always return the node of current task, ' +
+           'and .cursor.value always point to the node of coming task.', function(){
+
+            var spy0 = chai.spy(), spy1 = chai.spy();
+            var r = new Rytm();
+            r
+            .beat(function(){
+
+                expect(this).not.equal(r);
+
+                expect(this.current()).equal(this.steps[1]);
+
+                // test both context.current() and instance.current().
+                expect(this.current()).equal(r.current());
+                
+                this.go();
+
+                expect(this.current()).equal(this.steps[1]);
+
+                expect(r.current()).equal(this.steps[2]);
+
+                this.go();
+
+                expect(this.current()).equal(this.steps[1]);
+
+                expect(r.current()).equal(this.steps[3]);
+
+            }, spy0)
+            .beat(spy1);
+
+            expect(r.cursor.value).is.equal(r.steps[0]);
+
+            expect(r.current()).is.equal(null);
+
+            r.go();
+        });
+    });
+
     describe('.go', function(){
         it('should be able to advance the cursor and execute the following task immediately',
             function(){
@@ -127,6 +167,43 @@ describe('Rytm', function(){
                 // also imply that the tasks are execute synchronously.
                 expect(taskIsExecuted).is.true;
                 expect(secondTaskExecuted).is.false;
+            }
+        );
+
+        it('should always run coming task (according to cursor position)' + 
+            ' no matter how many times go() was called',
+            function(){
+                var spy0 = chai.spy(), spy1 = chai.spy();
+                var r = new Rytm();
+                r
+                .beat(function(){
+
+                    expect(this.steps[0].went).is.true;
+
+                    expect(this.steps[1].went).is.false;
+                    
+                    this.go();
+
+                    expect(spy0).have.been.called.once;
+
+                    expect(spy1).have.been.not_called;
+
+                    expect(this.steps[1].went).is.true;
+
+                    expect(this.steps[0].went).is.true;
+
+                    this.go();
+
+                    expect(spy0).have.been.called.once;
+
+                    expect(spy1).have.been.called.once;
+
+                    expect(this.steps[2].went).is.true;
+
+                }, spy0)
+                .beat(spy1);
+
+                r.go();
             }
         );
     });
@@ -437,7 +514,7 @@ describe('Rytm', function(){
         it('should advance the cursor to point to ' +
             'the next task of next task when go() is called in next task', 
             function(done){
-                var spy = chai.spy(), spy2 = chai.spy();
+                var spy = chai.spy(), spy2 = chai.spy(), spy3 = chai.spy();
 
                 (new Rytm(function(){
 
@@ -445,11 +522,34 @@ describe('Rytm', function(){
 
                     expect(spy).have.been.called.once;
 
+                    expect(spy2).have.been.not_called;
+
                     this.next();
 
                     expect(spy).have.been.called.twice;
 
                     expect(spy2).have.been.called.once;
+
+                    
+                    // should point at spy3 (step4)
+
+                    expect(this.current().went).is.true;
+
+                    expect(this.current().next.went).is.true;
+
+                    // because step3 does not call `go()`
+                    expect(this.current().next.next.went).is.false;
+
+                    expect(this.cursor.value).equal(this.steps[this.steps.length - 1]);
+
+                    this.next();
+
+                    // future calling should be ignored
+                    expect(spy).have.been.called.twice;
+
+                    expect(spy3).have.been.not_called;
+
+                    expect(this.cursor.value).equal(this.steps[this.steps.length - 1]);
 
                     done();
 
@@ -466,7 +566,7 @@ describe('Rytm', function(){
 
                     spy2();
 
-                })).go();
+                }, spy3)).go();
             }
         );
     });

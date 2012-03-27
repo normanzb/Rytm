@@ -155,7 +155,18 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
                 "title": "current",
                 "slug": "current"
               },
-              "depth": 2
+              "depth": 2,
+              "children": [
+                {
+                  "type": "heading",
+                  "data": {
+                    "level": 3,
+                    "title": "Tips and Annotations",
+                    "slug": "tips-and-annotations"
+                  },
+                  "depth": 3
+                }
+              ]
             }, {
               "type": "heading",
               "data": {
@@ -325,6 +336,22 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
               "type": "heading",
               "data": {
                 "level": 2,
+                "title": "TaskContext",
+                "slug": "taskcontext"
+              },
+              "depth": 2
+            }, {
+              "type": "heading",
+              "data": {
+                "level": 2,
+                "title": "createTaskContext",
+                "slug": "createtaskcontext"
+              },
+              "depth": 2
+            }, {
+              "type": "heading",
+              "data": {
+                "level": 2,
                 "title": "TODO",
                 "slug": "todo"
               },
@@ -480,7 +507,18 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
             "title": "current",
             "slug": "current"
           },
-          "depth": 2
+          "depth": 2,
+          "children": [
+            {
+              "type": "heading",
+              "data": {
+                "level": 3,
+                "title": "Tips and Annotations",
+                "slug": "tips-and-annotations"
+              },
+              "depth": 3
+            }
+          ]
         }, {
           "type": "heading",
           "data": {
@@ -646,6 +684,22 @@ f.event={add:function(a,c,d,e,g){var h,i,j,k,l,m,n,o,p,q,r,s;if(!(a.nodeType===3
               "depth": 3
             }
           ]
+        }, {
+          "type": "heading",
+          "data": {
+            "level": 2,
+            "title": "TaskContext",
+            "slug": "taskcontext"
+          },
+          "depth": 2
+        }, {
+          "type": "heading",
+          "data": {
+            "level": 2,
+            "title": "createTaskContext",
+            "slug": "createtaskcontext"
+          },
+          "depth": 2
         }, {
           "type": "heading",
           "data": {

@@ -67,7 +67,11 @@
             // * The "head node" simply redirect the calls to next step
             this._go.apply(this, arguments);
         })];
-        this.cursor = this.steps[0];
+
+        // * this.cursor.value is actually shared between TaskContexts
+        this.cursor = {
+            value: this.steps[0]
+        };
         
         // * Creates `go()`, which wraps `_go()`, make sure the context of `go()` is always current
         //   instance
@@ -100,7 +104,7 @@
 
 	var p = Rytm.prototype;
 
-    p._inNextCallContext = false;
+    p._inNextCallContext = 0;
 
     // ## _createNode
     // 
@@ -142,9 +146,18 @@
     //
     // Get current task node
     //
+    // ### Tips and Annotations
+    // 
     p.current = function(){
-        if (this.cursor){
-            return this.cursor.prev;
+
+        // * It will check if we are in TaskContext, if we are,
+        //   the cursor is locked, it will return the locked cursor.
+        if (this._current){
+            return this._current;
+        }
+
+        if (this.cursor.value){
+            return this.cursor.value.prev;
         }
 
         return this.steps[this.steps.length - 1];
@@ -176,8 +189,8 @@
             //   there are newly added tasks, go() will start
             //   from previous stop point and work through the 
             //   newly added task exclusively
-    		if (this.cursor == null){
-    			this.cursor = stepStruct;
+    		if (this.cursor.value == null){
+    			this.cursor.value = stepStruct;
     		}
         }
 		
@@ -233,16 +246,29 @@
     // ### Tips and Annotations
 	p._go = function(){
 		
-		var callback;
+		var callback, ctx, current, contextualScope = this;
+
+        // * `go()` can force `this` points to the instance of Rytm,
+        //   so in most case we don't have to check this._instance.
+        if (this._instance){
+            contextualScope = this._instance;
+        }
 
         // * _go() will check if we are in a nested `next()` calling context
         //  by visiting _inNextCallContext
         //  if we are, we will have to skip same step because they might already
         //  be called. 
-        while (this._inNextCallContext > 0){
-            this._inNextCallContext--;
-            if (this.cursor.next){
-                this.cursor = this.cursor.next;
+
+        while (contextualScope._inNextCallContext > 0){
+            
+            contextualScope._inNextCallContext--;
+
+            if (this.cursor.value.prev){
+                this.cursor.value.prev.went = true;
+            }
+            this.cursor.value.went = true;
+            if (this.cursor.value.next){
+                this.cursor.value = this.cursor.value.next;
             }
             else{
                 throw "Rytm: Strangely we are in a nested context "
@@ -250,27 +276,35 @@
             }
         }
 		
-		if (this.cursor == null){
+		if (this.cursor.value == null){
 			return this;
 		}
 		
-		callback = this.cursor.callback;
+		callback = this.cursor.value.callback;
 
-        // TODO: tick cursor here
+        /* TODO: tick cursor here */
 		
 		if (callback == null){
 			return this;
 		}
 
-        var current = this.current();
+        current = contextualScope.current();
+
         if (current){
             current.went = true;
         }
-		
-		//   and then advance to next
-		this.cursor = this.cursor.next;
 
-		var result = callback.apply(this, arguments);
+        if (this instanceof TaskContext){
+            ctx = createTaskContext(this._instance);
+        }
+        else{
+            ctx = createTaskContext(this);
+        }
+
+        //   and then advance to next
+        this.cursor.value = this.cursor.value.next;
+
+		var result = callback.apply(ctx, arguments);
 
         // * _go() will also check if the current task has a return value
         //   if there is, then consider the result as the parameter of
@@ -456,7 +490,7 @@
     //
     // A reference to the next task.
     //
-    // The difference between `next` and`go` is:
+    // The difference between `next` and `go` is:
     // once `go` gets called, we will immediately advance the internal cursor to next step
     // so if the `go` gets called multiple time, your tasks in sequence will be 
     // consumed faster then expected.
@@ -467,12 +501,17 @@
     p.next = function(){
         var cur = this.current(),
             go = this.go, result;
+
+        // * `next()` will do nothing once `go()` gets called.
+        if (cur.went){
+            return;
+        }
         
         if (cur.next && cur.next.callback){
-            // * Private member _inNextCallContext indicates how many level of nested next() is called
-            //   correspondingly, later call to `go()` will have to skip _inNextCallContext
+            // * Private member `_inNextCallContext` indicates how many level of nested next() is called
+            //   correspondingly, later call to `go()` will have to skip the number of `_inNextCallContext`
             //   tasks.
-            this._inNextCallContext++;
+            this._instance._inNextCallContext++;
 
             result = cur.next.callback.apply(this, arguments);
 
@@ -482,12 +521,35 @@
                 this.go();
             }
 
-            this._inNextCallContext--;
+            if (this._instance._inNextCallContext > 0){
+                this._instance._inNextCallContext--;
+            }
         }
 
         return result;
 
     };
+
+    // ## TaskContext
+    // `this` in task callback actually points to an instance of TaskContext,
+    // 
+    function TaskContext(rytm){
+        // TaskContext will make sure calls are fixed to current task.
+        // For example, `next()` will always call to callback of next task even
+        // when Rytm.cursor is advanced.
+        this._current = rytm.cursor.value;
+        this._instance = rytm;
+    };
+
+    // ## createTaskContext
+    // Create and return an instance of TaskContext, set current instance.__proto__ to 
+    // current instance of Rytm, so we can visit the data and method under current instance
+    // of Rytm.
+    function createTaskContext(rytm){
+        TaskContext.prototype = rytm;
+        var ret = new TaskContext(rytm);
+        return ret;
+    }
 	
 	return Rytm;
 });
