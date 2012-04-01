@@ -9,7 +9,9 @@
     if (this.require && this.define && this.define.amd){
         // * AMD loader such as requirejs or curl: 
         // `require('path/to/rytm', callback);`
-        define(Rytm);
+        define(function(){
+            return Rytm;
+        });
     }
     else if (typeof exports != 'undefined'　&& typeof module != 'undefined'){
         // * Nodejs module loading:
@@ -322,7 +324,7 @@
     // 
     // Execute the next task in the sequence, but delay a bit, same as 
     // appending a wait(0) between current task and next task.
-    // this is useful when you want to leave the working idle so runtime
+    // this is useful when you want to leave the main thread idle so runtime
     // can pick some more important task to process.
     //
     // ### Parameters
