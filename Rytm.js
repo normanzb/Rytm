@@ -29,7 +29,7 @@
 ("Rytm", function(global, undef){
     "use strict";
 
-    /* no operation func */
+    /* Shims */
     var noop;
 
     if (global.etui){
@@ -41,6 +41,18 @@
     else{
         noop = function(){};
     }
+
+    var bind = Function.prototype.bind || (function(context) {
+        var slice = Array.prototype.slice;
+        var __method = this, args = slice.call(arguments);
+        args.shift();
+        return function wrapper() {
+            if (this instanceof wrapper){
+                context = this;
+            }
+            return __method.apply(context, args.concat(slice.call(arguments)));
+        };
+    });
 
     // ## Constructor
     //
@@ -62,7 +74,7 @@
         // * You can also create new instance the 'creator' style:
         //   `var r = Rytm()`
         if (!(this instanceof Rytm)){
-            return new (Rytm.bind.apply(Rytm, null, arguments))();
+            return new (bind.apply(Rytm, null, arguments))();
         }
     
         this.steps = [this._createNode(function(){
@@ -77,9 +89,9 @@
         
         // * Creates `go()`, which wraps `_go()`, make sure the context of `go()` is always current
         //   instance
-        this.go = this._go.bind(this);
-        this.defer = this.defer.bind(this);
-        this.wait = this.wait.bind(this);
+        this.go = bind.call(this._go, this);
+        this.defer = bind.call(this.defer, this);
+        this.wait = bind.call(this.wait, this);
 
         // * Constructor will automatically load callbacks which passed in constructor as 
         //   tasks
