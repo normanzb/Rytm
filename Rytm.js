@@ -6,7 +6,7 @@
 ;(function(name, factory){
     var Rytm = factory(this);
 
-    if (this.require && this.define.amd && this.define){
+    if (this.require && this.define && this.define.amd){
         // * AMD loader such as requirejs or curl: 
         // `require('path/to/rytm', callback);`
         define(Rytm);
