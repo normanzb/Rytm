@@ -6,10 +6,10 @@
 ;(function(name, factory){
     var Rytm = factory(this);
 
-    if (this.require && this.require.amd && this.define){
+    if (this.require && this.define.amd && this.define){
         // * AMD loader such as requirejs or curl: 
         // `require('path/to/rytm', callback);`
-        this.define(Rytm);
+        define(Rytm);
     }
     else if (typeof exports != 'undefined'　&& typeof module != 'undefined'){
         // * Nodejs module loading:
