@@ -494,7 +494,23 @@ describe('Rytm', function(){
         );
     });
 
-    // TODO: describe wait()
+    describe('.wait', function(){
+        it('should pause the execution 1 millisecond if no parameter given', function(done){
+            var spy = chai.spy();
+            var r = new Rytm(function(){
+                setTimeout(function(){
+                    expect(spy).have.been.called.once;
+                    done();
+                }, 20);
+                this.go()
+                expect(spy).have.been.not_called;
+            });
+            r
+            .wait()
+            .beat(spy)
+            .go();
+        });
+    });
 
     describe('.next', function(){
         it('should be a reference next task.', 
@@ -546,8 +562,8 @@ describe('Rytm', function(){
             }
         );
 
-        it('should advance the cursor to point to ' +
-            'the next task of next task when go() is called in next task', 
+        it('should advance the cursor to the next task of' +
+            'the next task when go() is called in next task.', 
             function(done){
                 var spy = chai.spy(), spy2 = chai.spy(), spy3 = chai.spy();
 
@@ -579,7 +595,7 @@ describe('Rytm', function(){
 
                     this.next();
 
-                    // future calling should be ignored
+                    // futher calling should be ignored
                     expect(spy).have.been.called.twice;
 
                     expect(spy3).have.been.not_called;
