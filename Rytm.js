@@ -150,6 +150,7 @@
             next: next, 
             prev: null,
             lastCalls: [],
+            args: [],
             ticked: false, 
             went: false
         };
@@ -406,6 +407,10 @@
     // ## all
     // Return a new callback each time `all()` is called, will go to next step 
     // once all returned callbacks are called
+
+    // ### Parameters
+    // * key - a key to indicate the callback, later you can use this key to retrieve
+    //   the parameters.
     //
     // ### Tips and Annotation
     // * It is suggested to call `all()` in the same synchronous context, if `all()`
@@ -428,10 +433,11 @@
     //         });
     //          
 
-    p.all = function(){
+    p.all = function(key){
         var cur = this.current(),
             go = this.go,
-            outerScope = this;
+            outerScope = this,
+            argsIndex = cur.lastCalls.length;
 
         if (!cur){
         	// * If all tasks are executed and then `all()` was called, 
@@ -463,10 +469,11 @@
 
         var ret = function(){
             var scope = this,
-                args = arguments;
+                args = Array.prototype.slice.call(arguments),
+                l;
 
-            // * If all() is used with the other method, such as once(), we do it as 'first
-            //    done first serv'
+            // * If all() is used with the other method, such as once(), 'first
+            //    done first serv'.
             if (cur !== outerScope.current() || cur.went === true){
                 cur.lastCalls = [];
                 return;
@@ -480,12 +487,16 @@
                 return null;
             }
 
-            var l = cur.lastCalls.length;
+            cur.args[argsIndex] = args;
+            cur.args[argsIndex].key = key; 
+
+            l = cur.lastCalls.length;
+
             while(l--){
                 if (cur.lastCalls[l] == ret){
                     cur.lastCalls.splice(l, 1);
                     if (cur.lastCalls.length <= 0){
-                        go();
+                        go.apply(this, cur.args);
                     }
                     return true;
                 }

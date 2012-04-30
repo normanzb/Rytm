@@ -492,6 +492,31 @@ describe('Rytm', function(){
                 }, spy)).go();
             }
         );
+
+        it('should pass the arguments that passed into the callbacks,' +
+            ' to the coming step in an array. ', 
+            function(done){
+                var spy = chai.spy(), count = 99;
+                (new Rytm(function(){
+
+                    for(var l = count; l--; ){
+                        setTimeout((function(l){
+                            this(l, l+1);
+                            
+                        }).bind(this.all(l % 4 ===0?undefined:l), l), Math.floor(Math.random() * 1000));
+                    }
+                }, function(){
+                    for(var i = 0; i < count;i++){
+                        var current = count - i - 1;
+                        expect(arguments[i][0]).equal(current);
+                        expect(arguments[i][1]).equal(current + 1);
+                        expect(arguments[i]['key']).equal(current % 4 ===0?undefined:current);
+                    }
+
+                    done();
+                })).go();
+            }
+        );
     });
 
     describe('.wait', function(){
@@ -507,6 +532,28 @@ describe('Rytm', function(){
             });
             r
             .wait()
+            .beat(spy)
+            .go();
+        });
+    });
+
+    describe('.wait', function(){
+        it('should pause the execution with specified millisecond', function(){
+            var spy = chai.spy();
+            var r = new Rytm(function(){
+                setTimeout(function(){
+                    expect(spy).have.been.not_called;
+                }, 20);
+
+                setTimeout(function(){
+                    expect(spy).have.been.called.once;
+                    done();
+                }, 120);
+                this.go()
+                expect(spy).have.been.not_called;
+            });
+            r
+            .wait(100)
             .beat(spy)
             .go();
         });
