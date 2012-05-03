@@ -29,6 +29,8 @@
 ("Rytm", function(global, undef){
     "use strict";
 
+    var ver = '0.1';
+
     /* Shims */
     var noop;
 
@@ -98,6 +100,8 @@
         loadSteps.call(this, arguments);
         
     };
+
+    Rytm.ver = ver;
     
 
     /*
