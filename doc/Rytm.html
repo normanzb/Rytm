@@ -3,10 +3,12 @@
 <p>Rytm supports multiply JavaScript environment including:</p></div></div><div class="code"><div class="wrapper"><span class="p">;(</span><span class="kd">function</span><span class="p">(</span><span class="nx">name</span><span class="p">,</span> <span class="nx">factory</span><span class="p">){</span>
     <span class="kd">var</span> <span class="nx">Rytm</span> <span class="o">=</span> <span class="nx">factory</span><span class="p">(</span><span class="k">this</span><span class="p">);</span>
 
-    <span class="k">if</span> <span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">require</span> <span class="o">&amp;&amp;</span> <span class="k">this</span><span class="p">.</span><span class="nx">require</span><span class="p">.</span><span class="nx">amd</span> <span class="o">&amp;&amp;</span> <span class="k">this</span><span class="p">.</span><span class="nx">define</span><span class="p">){</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><ul>
+    <span class="k">if</span> <span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">require</span> <span class="o">&amp;&amp;</span> <span class="k">this</span><span class="p">.</span><span class="nx">define</span> <span class="o">&amp;&amp;</span> <span class="k">this</span><span class="p">.</span><span class="nx">define</span><span class="p">.</span><span class="nx">amd</span><span class="p">){</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><ul>
 <li>AMD loader such as requirejs or curl: 
 <code>require('path/to/rytm', callback);</code></li>
-</ul></div></div><div class="code"><div class="wrapper">        <span class="k">this</span><span class="p">.</span><span class="nx">define</span><span class="p">(</span><span class="nx">Rytm</span><span class="p">);</span>
+</ul></div></div><div class="code"><div class="wrapper">        <span class="nx">define</span><span class="p">(</span><span class="nx">name</span><span class="p">,</span> <span class="kd">function</span><span class="p">(){</span>
+            <span class="k">return</span> <span class="nx">Rytm</span><span class="p">;</span>
+        <span class="p">});</span>
     <span class="p">}</span>
     <span class="k">else</span> <span class="k">if</span> <span class="p">(</span><span class="k">typeof</span> <span class="nx">exports</span> <span class="o">!=</span> <span class="s1">&#39;undefined&#39;</span><span class="err">　</span><span class="o">&amp;&amp;</span> <span class="k">typeof</span> <span class="nx">module</span> <span class="o">!=</span> <span class="s1">&#39;undefined&#39;</span><span class="p">){</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><ul>
 <li>Nodejs module loading:
@@ -24,7 +26,9 @@ without AMD loader</li>
 <span class="p">(</span><span class="s2">&quot;Rytm&quot;</span><span class="p">,</span> <span class="kd">function</span><span class="p">(</span><span class="nx">global</span><span class="p">,</span> <span class="nx">undef</span><span class="p">){</span>
     <span class="s2">&quot;use strict&quot;</span><span class="p">;</span>
 
-    <span class="cm">/* no operation func */</span>
+    <span class="kd">var</span> <span class="nx">ver</span> <span class="o">=</span> <span class="s1">&#39;0.1&#39;</span><span class="p">;</span>
+
+    <span class="cm">/* Shims */</span>
     <span class="kd">var</span> <span class="nx">noop</span><span class="p">;</span>
 
     <span class="k">if</span> <span class="p">(</span><span class="nx">global</span><span class="p">.</span><span class="nx">etui</span><span class="p">){</span>
@@ -35,7 +39,19 @@ without AMD loader</li>
     <span class="p">}</span>
     <span class="k">else</span><span class="p">{</span>
         <span class="nx">noop</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(){};</span>
-    <span class="p">}</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h2 id="constructor">Constructor</h2>
+    <span class="p">}</span>
+
+    <span class="kd">var</span> <span class="nx">bind</span> <span class="o">=</span> <span class="nb">Function</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">bind</span> <span class="o">||</span> <span class="p">(</span><span class="kd">function</span><span class="p">(</span><span class="nx">context</span><span class="p">)</span> <span class="p">{</span>
+        <span class="kd">var</span> <span class="nx">slice</span> <span class="o">=</span> <span class="nb">Array</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">slice</span><span class="p">;</span>
+        <span class="kd">var</span> <span class="nx">__method</span> <span class="o">=</span> <span class="k">this</span><span class="p">,</span> <span class="nx">args</span> <span class="o">=</span> <span class="nx">slice</span><span class="p">.</span><span class="nx">call</span><span class="p">(</span><span class="nx">arguments</span><span class="p">);</span>
+        <span class="nx">args</span><span class="p">.</span><span class="nx">shift</span><span class="p">();</span>
+        <span class="k">return</span> <span class="kd">function</span> <span class="nx">wrapper</span><span class="p">()</span> <span class="p">{</span>
+            <span class="k">if</span> <span class="p">(</span><span class="k">this</span> <span class="k">instanceof</span> <span class="nx">wrapper</span><span class="p">){</span>
+                <span class="nx">context</span> <span class="o">=</span> <span class="k">this</span><span class="p">;</span>
+            <span class="p">}</span>
+            <span class="k">return</span> <span class="nx">__method</span><span class="p">.</span><span class="nx">apply</span><span class="p">(</span><span class="nx">context</span><span class="p">,</span> <span class="nx">args</span><span class="p">.</span><span class="nx">concat</span><span class="p">(</span><span class="nx">slice</span><span class="p">.</span><span class="nx">call</span><span class="p">(</span><span class="nx">arguments</span><span class="p">)));</span>
+        <span class="p">};</span>
+    <span class="p">});</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h2 id="constructor">Constructor</h2>
 
 <p>Create Rytm instance and also loads the tasks</p>
 
@@ -58,7 +74,7 @@ without AMD loader</li>
 <li>You can also create new instance the 'creator' style:
 <code>var r = Rytm()</code></li>
 </ul></div></div><div class="code"><div class="wrapper">        <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="p">(</span><span class="k">this</span> <span class="k">instanceof</span> <span class="nx">Rytm</span><span class="p">)){</span>
-            <span class="k">return</span> <span class="k">new</span> <span class="p">(</span><span class="nx">Rytm</span><span class="p">.</span><span class="nx">bind</span><span class="p">.</span><span class="nx">apply</span><span class="p">(</span><span class="nx">Rytm</span><span class="p">,</span> <span class="kc">null</span><span class="p">,</span> <span class="nx">arguments</span><span class="p">))();</span>
+            <span class="k">return</span> <span class="k">new</span> <span class="p">(</span><span class="nx">bind</span><span class="p">.</span><span class="nx">apply</span><span class="p">(</span><span class="nx">Rytm</span><span class="p">,</span> <span class="kc">null</span><span class="p">,</span> <span class="nx">arguments</span><span class="p">))();</span>
         <span class="p">}</span>
     
         <span class="k">this</span><span class="p">.</span><span class="nx">steps</span> <span class="o">=</span> <span class="p">[</span><span class="k">this</span><span class="p">.</span><span class="nx">_createNode</span><span class="p">(</span><span class="kd">function</span><span class="p">(){</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><ul>
@@ -72,14 +88,16 @@ without AMD loader</li>
         </div></div></div><div class="segment"><div class="comments"><div class="wrapper"><ul>
 <li>Creates <code>go()</code>, which wraps <code>_go()</code>, make sure the context of <code>go()</code> is always current
 instance</li>
-</ul></div></div><div class="code"><div class="wrapper">        <span class="k">this</span><span class="p">.</span><span class="nx">go</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">_go</span><span class="p">.</span><span class="nx">bind</span><span class="p">(</span><span class="k">this</span><span class="p">);</span>
-        <span class="k">this</span><span class="p">.</span><span class="nx">defer</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">defer</span><span class="p">.</span><span class="nx">bind</span><span class="p">(</span><span class="k">this</span><span class="p">);</span>
-        <span class="k">this</span><span class="p">.</span><span class="nx">wait</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">wait</span><span class="p">.</span><span class="nx">bind</span><span class="p">(</span><span class="k">this</span><span class="p">);</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><ul>
+</ul></div></div><div class="code"><div class="wrapper">        <span class="k">this</span><span class="p">.</span><span class="nx">go</span> <span class="o">=</span> <span class="nx">bind</span><span class="p">.</span><span class="nx">call</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">_go</span><span class="p">,</span> <span class="k">this</span><span class="p">);</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">defer</span> <span class="o">=</span> <span class="nx">bind</span><span class="p">.</span><span class="nx">call</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">defer</span><span class="p">,</span> <span class="k">this</span><span class="p">);</span>
+        <span class="k">this</span><span class="p">.</span><span class="nx">wait</span> <span class="o">=</span> <span class="nx">bind</span><span class="p">.</span><span class="nx">call</span><span class="p">(</span><span class="k">this</span><span class="p">.</span><span class="nx">wait</span><span class="p">,</span> <span class="k">this</span><span class="p">);</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><ul>
 <li>Constructor will automatically load callbacks which passed in constructor as 
 tasks</li>
 </ul></div></div><div class="code"><div class="wrapper">        <span class="nx">loadSteps</span><span class="p">.</span><span class="nx">call</span><span class="p">(</span><span class="k">this</span><span class="p">,</span> <span class="nx">arguments</span><span class="p">);</span>
         
     <span class="p">};</span>
+
+    <span class="nx">Rytm</span><span class="p">.</span><span class="nx">ver</span> <span class="o">=</span> <span class="nx">ver</span><span class="p">;</span>
     
 
     <span class="cm">/*</span>
@@ -132,6 +150,7 @@ it creates a node which can be used in the task sequence.</p>
             <span class="nx">next</span><span class="o">:</span> <span class="nx">next</span><span class="p">,</span> 
             <span class="nx">prev</span><span class="o">:</span> <span class="kc">null</span><span class="p">,</span>
             <span class="nx">lastCalls</span><span class="o">:</span> <span class="p">[],</span>
+            <span class="nx">args</span><span class="o">:</span> <span class="p">[],</span>
             <span class="nx">ticked</span><span class="o">:</span> <span class="kc">false</span><span class="p">,</span> 
             <span class="nx">went</span><span class="o">:</span> <span class="kc">false</span>
         <span class="p">};</span>
@@ -295,7 +314,7 @@ p.s. return false will also cause immediate execution of next
 
 <p>Execute the next task in the sequence, but delay a bit, same as 
 appending a wait(0) between current task and next task.
-this is useful when you want to leave the working idle so runtime
+this is useful when you want to leave the main thread idle so runtime
 can pick some more important task to process.</p>
 
 <h3 id="parameters">Parameters</h3>
@@ -356,7 +375,12 @@ versa</p></li>
   <span class="p">};</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h2 id="all">all</h2>
 
 <p>Return a new callback each time <code>all()</code> is called, will go to next step 
-once all returned callbacks are called</p>
+once all returned callbacks are called</p></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><h3 id="parameters">Parameters</h3>
+
+<ul>
+<li>key - a key to indicate the callback, later you can use this key to retrieve
+the parameters.</li>
+</ul>
 
 <h3 id="tips-and-annotation">Tips and Annotation</h3>
 
@@ -382,10 +406,11 @@ ealier then you expected.</p>
     blahblah();
 });
 </code></pre></li>
-</ul></div></div><div class="code"><div class="wrapper">    <span class="nx">p</span><span class="p">.</span><span class="nx">all</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(){</span>
+</ul></div></div><div class="code"><div class="wrapper">    <span class="nx">p</span><span class="p">.</span><span class="nx">all</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(</span><span class="nx">key</span><span class="p">){</span>
         <span class="kd">var</span> <span class="nx">cur</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">current</span><span class="p">(),</span>
             <span class="nx">go</span> <span class="o">=</span> <span class="k">this</span><span class="p">.</span><span class="nx">go</span><span class="p">,</span>
-            <span class="nx">outerScope</span> <span class="o">=</span> <span class="k">this</span><span class="p">;</span>
+            <span class="nx">outerScope</span> <span class="o">=</span> <span class="k">this</span><span class="p">,</span>
+            <span class="nx">argsIndex</span> <span class="o">=</span> <span class="nx">cur</span><span class="p">.</span><span class="nx">lastCalls</span><span class="p">.</span><span class="nx">length</span><span class="p">;</span>
 
         <span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="nx">cur</span><span class="p">){</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><ul>
 <li>If all tasks are executed and then <code>all()</code> was called, 
@@ -417,9 +442,10 @@ happened async or sync</p></li>
 
         <span class="kd">var</span> <span class="nx">ret</span> <span class="o">=</span> <span class="kd">function</span><span class="p">(){</span>
             <span class="kd">var</span> <span class="nx">scope</span> <span class="o">=</span> <span class="k">this</span><span class="p">,</span>
-                <span class="nx">args</span> <span class="o">=</span> <span class="nx">arguments</span><span class="p">;</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><ul>
-<li>If all() is used with the other method, such as once(), we do it as 'first
-done first serv'</li>
+                <span class="nx">args</span> <span class="o">=</span> <span class="nb">Array</span><span class="p">.</span><span class="nx">prototype</span><span class="p">.</span><span class="nx">slice</span><span class="p">.</span><span class="nx">call</span><span class="p">(</span><span class="nx">arguments</span><span class="p">),</span>
+                <span class="nx">l</span><span class="p">;</span></div></div></div><div class="segment"><div class="comments"><div class="wrapper"><ul>
+<li>If all() is used with the other method, such as once(), 'first
+done first serv'.</li>
 </ul></div></div><div class="code"><div class="wrapper">            <span class="k">if</span> <span class="p">(</span><span class="nx">cur</span> <span class="o">!==</span> <span class="nx">outerScope</span><span class="p">.</span><span class="nx">current</span><span class="p">()</span> <span class="o">||</span> <span class="nx">cur</span><span class="p">.</span><span class="nx">went</span> <span class="o">===</span> <span class="kc">true</span><span class="p">){</span>
                 <span class="nx">cur</span><span class="p">.</span><span class="nx">lastCalls</span> <span class="o">=</span> <span class="p">[];</span>
                 <span class="k">return</span><span class="p">;</span>
@@ -433,12 +459,16 @@ done first serv'</li>
                 <span class="k">return</span> <span class="kc">null</span><span class="p">;</span>
             <span class="p">}</span>
 
-            <span class="kd">var</span> <span class="nx">l</span> <span class="o">=</span> <span class="nx">cur</span><span class="p">.</span><span class="nx">lastCalls</span><span class="p">.</span><span class="nx">length</span><span class="p">;</span>
+            <span class="nx">cur</span><span class="p">.</span><span class="nx">args</span><span class="p">[</span><span class="nx">argsIndex</span><span class="p">]</span> <span class="o">=</span> <span class="nx">args</span><span class="p">;</span>
+            <span class="nx">cur</span><span class="p">.</span><span class="nx">args</span><span class="p">[</span><span class="nx">argsIndex</span><span class="p">].</span><span class="nx">key</span> <span class="o">=</span> <span class="nx">key</span><span class="p">;</span> 
+
+            <span class="nx">l</span> <span class="o">=</span> <span class="nx">cur</span><span class="p">.</span><span class="nx">lastCalls</span><span class="p">.</span><span class="nx">length</span><span class="p">;</span>
+
             <span class="k">while</span><span class="p">(</span><span class="nx">l</span><span class="o">--</span><span class="p">){</span>
                 <span class="k">if</span> <span class="p">(</span><span class="nx">cur</span><span class="p">.</span><span class="nx">lastCalls</span><span class="p">[</span><span class="nx">l</span><span class="p">]</span> <span class="o">==</span> <span class="nx">ret</span><span class="p">){</span>
                     <span class="nx">cur</span><span class="p">.</span><span class="nx">lastCalls</span><span class="p">.</span><span class="nx">splice</span><span class="p">(</span><span class="nx">l</span><span class="p">,</span> <span class="mi">1</span><span class="p">);</span>
                     <span class="k">if</span> <span class="p">(</span><span class="nx">cur</span><span class="p">.</span><span class="nx">lastCalls</span><span class="p">.</span><span class="nx">length</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">){</span>
-                        <span class="nx">go</span><span class="p">();</span>
+                        <span class="nx">go</span><span class="p">.</span><span class="nx">apply</span><span class="p">(</span><span class="k">this</span><span class="p">,</span> <span class="nx">cur</span><span class="p">.</span><span class="nx">args</span><span class="p">);</span>
                     <span class="p">}</span>
                     <span class="k">return</span> <span class="kc">true</span><span class="p">;</span>
                 <span class="p">}</span>
