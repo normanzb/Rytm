@@ -8,7 +8,7 @@ if (require){
 }
 else{
     chai = this.chai;
-    spies = chai_spies;
+    spies = this.chai_spies;
 }
 
 chai.use(spies);
