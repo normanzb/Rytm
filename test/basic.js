@@ -667,6 +667,8 @@ describe('Rytm', function(){
                 }, spy3)).go();
             }
         );
+
+        // TODO: test next() with all()
     });
 
 });
