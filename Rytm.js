@@ -9,7 +9,7 @@
     if (this.require && this.define && this.define.amd){
         // * AMD loader such as requirejs or curl: 
         // `require('path/to/rytm', callback);`
-        define(name, function(){
+        define(function(){
             return Rytm;
         });
     }
