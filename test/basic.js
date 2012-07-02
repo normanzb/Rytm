@@ -538,7 +538,7 @@ describe('Rytm', function(){
     });
 
     describe('.wait', function(){
-        it('should pause the execution with specified millisecond', function(){
+        it('should pause the execution with specified millisecond', function(done){
             var spy = chai.spy();
             var r = new Rytm(function(){
                 setTimeout(function(){
