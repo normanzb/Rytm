@@ -13,7 +13,7 @@
             return Rytm;
         });
     }
-    else if (typeof exports != 'undefined'　&& typeof module != 'undefined'){
+    else if (typeof exports != 'undefined' && typeof module != 'undefined'){
         // * Nodejs module loading:
         //   `var Rytm = require('path/to/rytm');`
         module.exports = Rytm;
