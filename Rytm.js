@@ -120,7 +120,7 @@
         }
     }
 
-	var p = Rytm.prototype;
+    var p = Rytm.prototype;
 
     p._inNextCallContext = 0;
 
@@ -145,11 +145,11 @@
     //          // went - true to means the cursor advancing is already done
     //          // and do not do it again.
     //      }
-	p._createNode = function(callback, next){
-		if (next === undef){
-			next = null;
-		}
-		var ret = {
+    p._createNode = function(callback, next){
+        if (next === undef){
+            next = null;
+        }
+        var ret = {
             callback: callback, 
             next: next, 
             prev: null,
@@ -158,8 +158,8 @@
             ticked: false, 
             went: false
         };
-		return ret;
-	};
+        return ret;
+    };
 
     // ## current
     //
@@ -182,7 +182,7 @@
         return this.steps[this.steps.length - 1];
     };
 
-	// ## beat
+    // ## beat
     // 
     // Add a callback to the execution sequence
     //
@@ -191,30 +191,30 @@
     // 
     // ### Tips and Annotations
     //
-	p.beat = function(callback){
+    p.beat = function(callback){
         if (arguments.length > 1){
             loadSteps.call(this, arguments);
         }
         else{
-    		var stepStruct = this._createNode(callback),
+            var stepStruct = this._createNode(callback),
                 lastStep = this.steps[this.steps.length - 1];
 
             stepStruct.prev = lastStep;
-    		lastStep.next = stepStruct;
-    		this.steps.push(stepStruct);
-    		
+            lastStep.next = stepStruct;
+            this.steps.push(stepStruct);
+            
             // * Once current Rytm instance executed
             //   and after the execution of current instance
             //   there are newly added tasks, go() will start
             //   from previous stop point and work through the 
             //   newly added task exclusively
-    		if (this.cursor.value == null){
-    			this.cursor.value = stepStruct;
-    		}
+            if (this.cursor.value == null){
+                this.cursor.value = stepStruct;
+            }
         }
-		
-		return this;
-	};
+        
+        return this;
+    };
 
     // ## step
     // 
@@ -228,17 +228,17 @@
     // a specified millisecond, and pass the arguments to next task.
     // 
     // * wait: Specifiy the millisecond to wait.
-	p.wait = function(timeout){
-		var s = this;
+    p.wait = function(timeout){
+        var s = this;
 
-		s.step(function(){
+        s.step(function(){
             var args = arguments;
 
-			s.defer(timeout, args);
-		});
-		
-		return this;
-	};
+            s.defer(timeout, args);
+        });
+        
+        return this;
+    };
 
     // ## go
     // 
@@ -258,14 +258,14 @@
     //         asyncCall(this.go);
     //     })).go();
 
-	// ## _go
+    // ## _go
     //
     // When called, execute the next step immediately (context-binding-free).
     //
     // ### Tips and Annotations
-	p._go = function(){
-		
-		var callback, ctx, current, contextualScope = this;
+    p._go = function(){
+        
+        var callback, ctx, current, contextualScope = this;
 
         // * `go()` can force `this` points to the instance of Rytm,
         //   so in most case we don't have to check this._instance.
@@ -294,18 +294,18 @@
                     "but there is no cursor.next available, must be a bug.";
             }
         }
-		
-		if (this.cursor.value == null){
-			return this;
-		}
-		
-		callback = this.cursor.value.callback;
+        
+        if (this.cursor.value == null){
+            return this;
+        }
+        
+        callback = this.cursor.value.callback;
 
         /* TODO: tick cursor here */
-		
-		if (callback == null){
-			return this;
-		}
+        
+        if (callback == null){
+            return this;
+        }
 
         current = contextualScope.current();
 
@@ -323,7 +323,7 @@
         //   and then advance to next
         this.cursor.value = this.cursor.value.next;
 
-		var result = callback.apply(ctx, arguments);
+        var result = callback.apply(ctx, arguments);
 
         // * _go() will also check if the current task has a return value
         //   if there is, then consider the result as the parameter of
@@ -333,9 +333,9 @@
         if (result !== undef){
             this.go(result);
         }
-		
-		return this;
-	};
+        
+        return this;
+    };
 
     // ## defer
     // 
@@ -349,7 +349,7 @@
     // * args - The arguments to pass to next task
     // ### Tips and Annotations
 
-	p.defer = function(millisecond, args){
+    p.defer = function(millisecond, args){
 
         var ms;
 
@@ -370,12 +370,12 @@
         }
 
         var scope = this;
-		setTimeout(function(){
+        setTimeout(function(){
             scope.go.apply(scope, args);
         }, ms);
 
-		return this;
-	};
+        return this;
+    };
 
     // ## once
     // 
@@ -384,12 +384,12 @@
 
     // ### Tips and Annotation
 
-	p.once = function(){
-		var cur = this.current(),
-			go = this.go,
-			scope = this;
+    p.once = function(){
+        var cur = this.current(),
+            go = this.go,
+            scope = this;
 
-		return function(){
+        return function(){
             // * If we already went to following task and then 1 callback is called 
             //   we will ignore it.
             //   In order to make sure below code can safely advance to next task: 
@@ -400,13 +400,13 @@
             // * When once() is used with all() together, if the callback of once() is
             //   called, we advance the cursor and ignore the callbacks of all(), vise 
             //   versa
-			if (cur !== scope.current() || cur.went === true){
-				return;
-			}
+            if (cur !== scope.current() || cur.went === true){
+                return;
+            }
 
-			go.apply(scope, arguments);
-		};
-	};
+            go.apply(scope, arguments);
+        };
+    };
 
     // ## all
     // Return a new callback each time `all()` is called, will go to next step 
@@ -444,9 +444,9 @@
             argsIndex = cur.lastCalls.length;
 
         if (!cur){
-        	// * If all tasks are executed and then `all()` was called, 
+            // * If all tasks are executed and then `all()` was called, 
             //   it will return an `noop`
-        	return noop;
+            return noop;
         }
 
         // * If the 'returned callback' is executed within the generating 
@@ -579,8 +579,8 @@
         var ret = new TaskContext(rytm);
         return ret;
     }
-	
-	return Rytm;
+    
+    return Rytm;
 });
 
 // ## TODO
